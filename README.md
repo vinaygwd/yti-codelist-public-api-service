@@ -18,8 +18,8 @@ Do a HTTP GET to public resource:
 ## Interface Documentation
 
 When the microservice is running, you can get the Swagger REST API documentation from:
-[http://localhost:9600/cls-api/api/swagger.json](http://localhost:9600/cls-api/api/swagger.json)
-[http://localhost:9600/cls-api/swagger/index.html](http://localhost:9600/cls-api/swagger/index.html)
+- [http://localhost:9600/cls-api/api/swagger.json](http://localhost:9600/cls-api/api/swagger.json)
+- [http://localhost:9600/cls-api/swagger/index.html](http://localhost:9600/cls-api/swagger/index.html)
 
 ## Prerequisities
 
