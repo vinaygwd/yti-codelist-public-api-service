@@ -74,7 +74,7 @@ public class RegisterResource extends AbstractBaseResource {
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_REGISTER, expand)));
 
-        final List<Register> registerApis = new ArrayList();
+        final List<Register> registerApis = new ArrayList<Register>();
 
         final Set<Register> registers = m_domain.getRegisters(pageSize, from, type, name, meta.getAfter(), meta);
         registerApis.addAll(registers);

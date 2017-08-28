@@ -49,11 +49,6 @@ abstract class AbstractBaseResource {
 
     public static final String FILTER_NAME_REGISTER_ITEM = "registerItem";
 
-
-    public void AbstractBaseResource() {
-    }
-
-
     static class FilterModifier extends ObjectWriterModifier {
 
         private final FilterProvider provider;
