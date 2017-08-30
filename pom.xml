@@ -177,6 +177,7 @@
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.2</version><!--$NO-MVN-MAN-VER$-->
                 <configuration>
                     <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
                     <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
