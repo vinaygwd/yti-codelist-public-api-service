@@ -85,26 +85,24 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
+            <version>2.5</version><!--$NO-MVN-MAN-VER$-->
         </dependency>
 
         <!-- Elastic Search related Log4J -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.7</version>
         </dependency>
 
         <!-- Elastic Search -->
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>5.2.1</version>
+            <version>5.2.1</version><!--$NO-MVN-MAN-VER$-->
         </dependency>
 
         <!-- Elastic Search Transport client -->
@@ -179,7 +177,6 @@
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
-                <version>2.2.2</version>
                 <configuration>
                     <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
                     <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
@@ -222,7 +219,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.1</version><!--$NO-MVN-MAN-VER$-->
                 <inherited>true</inherited>
                 <configuration>
                     <source>${java.version}</source>
@@ -302,7 +299,7 @@
 
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.0.2</version><!--$NO-MVN-MAN-VER$-->
                 <executions>
                     <execution>
                         <id>copy-swagger-resources</id>
@@ -350,7 +347,7 @@
             <!-- fails-safe-plugin should be used instead of surefire so that the container gets stopped even when the tests fail -->
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.19.1</version><!--$NO-MVN-MAN-VER$-->
                 <executions>
                     <execution>
                         <id>integration-test</id>
