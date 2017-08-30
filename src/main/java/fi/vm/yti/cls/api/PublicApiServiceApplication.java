@@ -18,8 +18,6 @@ public class PublicApiServiceApplication {
 
     private static final Logger LOG = LoggerFactory.getLogger(PublicApiServiceApplication.class);
 
-    public static final String APP_VERSION = PublicApiServiceApplication.class.getPackage().getImplementationVersion();
-
 
     public PublicApiServiceApplication() {
 
@@ -30,35 +28,8 @@ public class PublicApiServiceApplication {
 
         final ApplicationContext context = SpringApplication.run(PublicApiServiceApplication.class, args);
 
-        printLogo();
-
         final AppInitializer serviceInitializer = (AppInitializer) context.getBean(AppInitializer.class);
         serviceInitializer.initialize();
-
-    }
-
-
-    /**
-     * Application logo printout to log.
-     */
-    private static void printLogo() {
-
-        LOG.info("");
-        LOG.info("       .__                                 ___.   .__  .__        ");
-        LOG.info("  ____ |  |   ______           ______  __ _\\_ |__ |  | |__| ____  ");
-        LOG.info("_/ ___\\|  |  /  ___/   ______  \\____ \\|  |  \\ __ \\|  | |  |/ ___\\ ");
-        LOG.info("\\  \\___|  |__\\___ \\   /_____/  |  |_> >  |  / \\_\\ \\  |_|  \\  \\___ ");
-        LOG.info(" \\___  >____/____  >           |   __/|____/|___  /____/__|\\___  >");
-        LOG.info("     \\/          \\/            |__|             \\/             \\/ ");
-        LOG.info("              .__                            .__              ");
-        LOG.info("_____  ______ |__|   ______ ______________  _|__| ____  ____  ");
-        LOG.info("\\__  \\ \\____ \\|  |  /  ___// __ \\_  __ \\  \\/ /  |/ ___\\/ __ \\ ");
-        LOG.info(" / __ \\|  |_> >  |  \\___ \\\\  ___/|  | \\/\\   /|  \\  \\__\\  ___/ ");
-        LOG.info("(____  /   __/|__| /____  >\\___  >__|    \\_/ |__|\\___  >___  >");
-        LOG.info("     \\/|__|             \\/     \\/                    \\/    \\/ ");
-        LOG.info("");
-        LOG.info("                --- Version " + APP_VERSION + " starting up. --- ");
-        LOG.info("");
 
     }
 

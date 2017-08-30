@@ -8,9 +8,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.cls.api.api.ApiUtils;
 import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
+import fi.vm.yti.cls.api.configuration.VersionInformation;
 import fi.vm.yti.cls.api.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -36,10 +39,18 @@ public class AppInitializer {
 
     private final PublicApiServiceProperties m_publicApiServiceProperties;
 
+    private final VersionInformation m_versionInformation;
+
+
+
+
 
     @Inject
-    public AppInitializer(final ApiUtils apiUtils,
+    public AppInitializer(final VersionInformation versionInformation,
+                          final ApiUtils apiUtils,
                           final PublicApiServiceProperties publicApiServiceProperties) {
+
+        m_versionInformation = versionInformation;
 
         m_apiUtils = apiUtils;
 
@@ -53,7 +64,34 @@ public class AppInitializer {
      */
     public void initialize() {
 
+        printLogo();
+
         updateSwaggerHost();
+
+    }
+
+
+    /**
+     * Application logo printout to log.
+     */
+    private void printLogo() {
+
+        LOG.info("");
+        LOG.info("       .__                                 ___.   .__  .__        ");
+        LOG.info("  ____ |  |   ______           ______  __ _\\_ |__ |  | |__| ____  ");
+        LOG.info("_/ ___\\|  |  /  ___/   ______  \\____ \\|  |  \\ __ \\|  | |  |/ ___\\ ");
+        LOG.info("\\  \\___|  |__\\___ \\   /_____/  |  |_> >  |  / \\_\\ \\  |_|  \\  \\___ ");
+        LOG.info(" \\___  >____/____  >           |   __/|____/|___  /____/__|\\___  >");
+        LOG.info("     \\/          \\/            |__|             \\/             \\/ ");
+        LOG.info("              .__                            .__              ");
+        LOG.info("_____  ______ |__|   ______ ______________  _|__| ____  ____  ");
+        LOG.info("\\__  \\ \\____ \\|  |  /  ___// __ \\_  __ \\  \\/ /  |/ ___\\/ __ \\ ");
+        LOG.info(" / __ \\|  |_> >  |  \\___ \\\\  ___/|  | \\/\\   /|  \\  \\__\\  ___/ ");
+        LOG.info("(____  /   __/|__| /____  >\\___  >__|    \\_/ |__|\\___  >___  >");
+        LOG.info("     \\/|__|             \\/     \\/                    \\/    \\/ ");
+        LOG.info("");
+        LOG.info("                --- Version " + m_versionInformation.getVersion() + " starting up. --- ");
+        LOG.info("");
 
     }
 

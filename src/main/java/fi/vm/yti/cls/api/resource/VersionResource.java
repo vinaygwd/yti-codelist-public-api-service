@@ -1,6 +1,8 @@
 package fi.vm.yti.cls.api.resource;
 
+import fi.vm.yti.cls.api.AppInitializer;
 import fi.vm.yti.cls.api.PublicApiServiceApplication;
+import fi.vm.yti.cls.api.configuration.VersionInformation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -20,6 +22,16 @@ import javax.ws.rs.Produces;
 public class VersionResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(VersionResource.class);
+
+    private VersionInformation m_versionInformation;
+
+
+    public VersionResource(final VersionInformation versionInformation) {
+
+        m_versionInformation = versionInformation;
+
+    }
+
 
     @GET
     @ApiOperation(value = "Get version information", response = String.class)
@@ -42,7 +54,7 @@ public class VersionResource {
                "(____  /   __/|__| /____  >\\___  >__|    \\_/ |__|\\___  >___  >\n" +
                "     \\/|__|             \\/     \\/                    \\/    \\/ \n" +
                "\n" +
-               "                --- Version " + PublicApiServiceApplication.APP_VERSION + " running. --- \n";
+               "                --- Version " + m_versionInformation.getVersion() + " running. --- \n";
 
     }
 
