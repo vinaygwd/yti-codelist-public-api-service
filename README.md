@@ -38,7 +38,7 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 Add the following Run configurations options:
 
-- Program arguments: `--spring.profiles.active=default,local --spring.config.location=../cls-config/application.yml,../cls-config/cls-public-api-service.yml`
+- Program arguments: `--spring.profiles.active=default --spring.config.location=../cls-config/application.yml,../cls-config/cls-public-api-service.yml`
 - Workdir: `$MODULE_DIR$`
 
 
