@@ -41,6 +41,12 @@ Add the following Run configurations options:
 - Program arguments: `--spring.profiles.active=default --spring.config.location=../cls-config/application.yml,../cls-config/cls-public-api-service.yml`
 - Workdir: `$MODULE_DIR$`
 
+Add folder for cls-project, application writes modified files there:
+
+```bash
+$ mkdir /data/cls
+```
+
 
 ### Building the Docker Image
 
