@@ -151,8 +151,14 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
         final SearchRequestBuilder searchRequest = client
                 .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
-                .setTypes(codeRegistryCodeValue + "_" + codeSchemeCodeValue)
-                .setQuery(QueryBuilders.termQuery("codeValue", codeCodeValue.toLowerCase()));
+                .setTypes(DomainConstants.ELASTIC_TYPE_CODE);
+
+        final BoolQueryBuilder builder = boolQuery();
+        builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
+        builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+        builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+        searchRequest.setQuery(builder);
+
         final SearchResponse response = searchRequest.execute().actionGet();
         LOG.info("getCode found: " + response.getHits().getTotalHits() + " hits.");
         if (response.getHits().getTotalHits() > 0) {
@@ -182,11 +188,14 @@ public class DomainImpl implements Domain {
             final List<Code> codes = new ArrayList<>();
             final SearchRequestBuilder searchRequest = client
                     .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
-                    .setTypes(codeRegistryCodeValue + "_" + codeSchemeCodeValue)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODE)
                     .addSort("codeValue.keyword", SortOrder.ASC)
                     .setSize(pageSize != null ? pageSize : MAX_SIZE)
                     .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
+            builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+            builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            searchRequest.setQuery(builder);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
@@ -725,7 +734,7 @@ public class DomainImpl implements Domain {
             builder.must(QueryBuilders.prefixQuery("municipality.codeValue.keyword", municipalityCode.toLowerCase()));
         }
         if (streetName != null) {
-            builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.multiMatchQuery(streetName.toLowerCase() + "*", "names.fi", "names.se").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(streetName.toLowerCase() + "*", "prefLabels.fi", "prefLabels.se").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         searchRequest.setQuery(builder);
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -756,7 +765,7 @@ public class DomainImpl implements Domain {
             builder.must(QueryBuilders.prefixQuery("municipality.codeValue.keyword", municipalityCode.toLowerCase()));
         }
         if (streetName != null) {
-            builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.multiMatchQuery(streetName.toLowerCase() + "*", "names.fi", "names.se").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(streetName.toLowerCase() + "*", "prefLabels.fi", "prefLabels.se").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         searchRequest.setQuery(builder);
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1348,7 +1357,7 @@ public class DomainImpl implements Domain {
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
         final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
-        builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.regexpQuery("names.fi", "~(null)"), ScoreMode.None));
+        builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.regexpQuery("prefLabels.fi", "~(null)"), ScoreMode.None));
         searchRequest.setQuery(builder);
         final SearchResponse response = searchRequest.execute().actionGet();
         setResultCounts(meta, response);

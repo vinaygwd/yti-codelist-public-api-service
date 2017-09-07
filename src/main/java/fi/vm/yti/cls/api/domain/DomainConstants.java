@@ -14,6 +14,8 @@ public class DomainConstants {
 
     public static final String ELASTIC_TYPE_CODESCHEME = "codescheme";
 
+    public static final String ELASTIC_TYPE_CODE = "code";
+
     public static final String ELASTIC_TYPE_MUNICIPALITY = "municipality";
 
     public static final String ELASTIC_TYPE_MAGISTRATE = "magistrate";
