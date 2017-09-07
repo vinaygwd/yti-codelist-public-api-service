@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import fi.vm.yti.cls.common.model.BusinessId;
 import fi.vm.yti.cls.common.model.BusinessServiceSubRegion;
+import fi.vm.yti.cls.common.model.Code;
+import fi.vm.yti.cls.common.model.CodeRegistry;
+import fi.vm.yti.cls.common.model.CodeScheme;
 import fi.vm.yti.cls.common.model.ElectoralDistrict;
 import fi.vm.yti.cls.common.model.HealthCareDistrict;
 import fi.vm.yti.cls.common.model.Magistrate;
@@ -13,8 +16,6 @@ import fi.vm.yti.cls.common.model.Municipality;
 import fi.vm.yti.cls.common.model.PostManagementDistrict;
 import fi.vm.yti.cls.common.model.PostalCode;
 import fi.vm.yti.cls.common.model.Region;
-import fi.vm.yti.cls.common.model.Register;
-import fi.vm.yti.cls.common.model.RegisterItem;
 import fi.vm.yti.cls.common.model.StreetAddress;
 import fi.vm.yti.cls.common.model.StreetNumber;
 import org.apache.lucene.search.join.ScoreMode;
@@ -65,29 +66,29 @@ public class DomainImpl implements Domain {
     }
 
 
-    public Set<Register> getRegisters(final Integer pageSize,
-                                       final Integer from,
-                                       final String registerCode,
-                                       final String registerName,
-                                       final Date after,
-                                       final Meta meta) {
+    public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
+                                               final Integer from,
+                                               final String codeRegistryCodeValue,
+                                               final String codeRegistryPrefLabel,
+                                               final Date after,
+                                               final Meta meta) {
 
-        final Set<Register> registers = new HashSet<>();
+        final Set<CodeRegistry> codeRegistries = new HashSet<>();
 
-        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_REGISTERS).execute().actionGet().isExists();
+        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
 
         if (exists) {
 
             final ObjectMapper mapper = new ObjectMapper();
 
             final SearchRequestBuilder searchRequest = m_client
-                    .prepareSearch(DomainConstants.ELASTIC_INDEX_REGISTERS)
-                    .setTypes(DomainConstants.ELASTIC_TYPE_REGISTER)
-                    .addSort("code.keyword", SortOrder.ASC)
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODEREGISTRY)
+                    .addSort("codeValue.keyword", SortOrder.ASC)
                     .setSize(pageSize != null ? pageSize : MAX_SIZE)
                     .setFrom(from != null ? from : 0);
 
-            final BoolQueryBuilder builder = constructSearchQuery(registerCode, registerName, after);
+            final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel, after);
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -95,32 +96,79 @@ public class DomainImpl implements Domain {
 
             Arrays.stream(response.getHits().hits()).forEach(hit -> {
                 try {
-                    final Register register = mapper.readValue(hit.getSourceAsString(), Register.class);
-                    registers.add(register);
+                    final CodeRegistry codeRegistry = mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
+                    codeRegistries.add(codeRegistry);
                 } catch (IOException e) {
-                    LOG.error("getRegisters reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                    LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
             });
 
         }
 
-        return registers;
+        return codeRegistries;
+
+    }
+
+
+    public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
+                                          final Integer from,
+                                          final String codeRegistryCodeValue,
+                                          final String codeSchemeCodeValue,
+                                          final String codeSchemePrefLabel,
+                                          final String codeSchemeType,
+                                          final Date after,
+                                          final Meta meta) {
+
+        final Set<CodeScheme> codeSchemes = new HashSet<>();
+
+        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
+
+        if (exists) {
+
+            final ObjectMapper mapper = new ObjectMapper();
+
+            final SearchRequestBuilder searchRequest = m_client
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODESCHEMES)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODESCHEME)
+                    .addSort("codeValue.keyword", SortOrder.ASC)
+                    .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                    .setFrom(from != null ? from : 0);
+
+            final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
+            builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            searchRequest.setQuery(builder);
+
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+
+            Arrays.stream(response.getHits().hits()).forEach(hit -> {
+                try {
+                    final CodeScheme codeScheme = mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                    codeSchemes.add(codeScheme);
+                } catch (IOException e) {
+                    LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            });
+
+        }
+
+        return codeSchemes;
 
     }
 
 
 
-    public Set<String> getRegisterTypes() {
+    public Set<String> getCodeSchemeTypes() {
 
         final Set<String> types = new HashSet<>();
 
-        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_REGISTER_ITEMS).execute().actionGet().isExists();
+        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
 
         if (exists) {
             final AggregationBuilder aggregation = AggregationBuilders.terms("typesAgg").field("_type").size(1000).minDocCount(0);
 
             final SearchRequestBuilder searchRequest = m_client
-                    .prepareSearch(DomainConstants.ELASTIC_INDEX_REGISTER_ITEMS)
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
                     .addAggregation(aggregation)
                     .setSize(0);
 
@@ -139,28 +187,30 @@ public class DomainImpl implements Domain {
     }
 
 
-    public RegisterItem getRegisterItem(final String registerCode, final String registerItemCode) {
+    public Code getCode(final String codeRegistryCodeValue,
+                        final String codeSchemeCodeValue,
+                        final String codeCodeValue) {
 
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_REGISTER_ITEMS)
-                .setTypes(registerCode)
-                .setQuery(QueryBuilders.termQuery("code", registerItemCode.toLowerCase()));
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .setTypes(codeRegistryCodeValue + "_" + codeSchemeCodeValue)
+                .setQuery(QueryBuilders.termQuery("codeValue", codeCodeValue.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
-        LOG.info("getRegisterItem found: " + response.getHits().getTotalHits() + " hits.");
+        LOG.info("getCode found: " + response.getHits().getTotalHits() + " hits.");
 
         if (response.getHits().getTotalHits() > 0) {
             final SearchHit hit = response.getHits().getAt(0);
             try {
                 if (hit != null) {
-                    final RegisterItem registerItem = mapper.readValue(hit.getSourceAsString(), RegisterItem.class);
-                    return registerItem;
+                    final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
+                    return code;
                 }
             } catch (IOException e) {
-                LOG.error("getRegisterItem reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
             }
         }
 
@@ -168,40 +218,49 @@ public class DomainImpl implements Domain {
 
     }
 
-    public List<RegisterItem> getRegisterItems(final Integer pageSize,
-                                               final Integer from,
-                                               final String registerCode,
-                                               final String registerItemCode,
-                                               final Date after,
-                                               final Meta meta) {
+    public List<Code> getCodes(final Integer pageSize,
+                               final Integer from,
+                               final String codeRegistryCodeValue,
+                               final String codeSchemeCodeValue,
+                               final String codeCodeValue,
+                               final String prefLabel,
+                               final Date after,
+                               final Meta meta) {
 
-        final ObjectMapper mapper = new ObjectMapper();
+        final boolean exists = m_client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
 
-        final List<RegisterItem> registerItems = new ArrayList<>();
+        if (exists) {
 
-        final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_REGISTER_ITEMS)
-                .setTypes(registerCode)
-                .addSort("code.keyword", SortOrder.ASC)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final ObjectMapper mapper = new ObjectMapper();
 
-        final BoolQueryBuilder builder = constructSearchQuery(registerItemCode, null, after);
-        searchRequest.setQuery(builder);
+            final List<Code> codes = new ArrayList<>();
 
-        final SearchResponse response = searchRequest.execute().actionGet();
-        setResultCounts(meta, response);
+            final SearchRequestBuilder searchRequest = m_client
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                    .setTypes(codeRegistryCodeValue + "_" + codeSchemeCodeValue)
+                    .addSort("codeValue.keyword", SortOrder.ASC)
+                    .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                    .setFrom(from != null ? from : 0);
 
-        Arrays.stream(response.getHits().hits()).forEach(hit -> {
-            try {
-                final RegisterItem registerItem = mapper.readValue(hit.getSourceAsString(), RegisterItem.class);
-                registerItems.add(registerItem);
-            } catch (IOException e) {
-                LOG.error("getRegisterItems reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
-            }
-        });
+            final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
+            searchRequest.setQuery(builder);
 
-        return registerItems;
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+
+            Arrays.stream(response.getHits().hits()).forEach(hit -> {
+                try {
+                    final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
+                    codes.add(code);
+                } catch (IOException e) {
+                    LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            });
+
+            return codes;
+        }
+
+        return null;
 
     }
 
@@ -212,9 +271,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTALCODE)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -241,7 +300,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTALCODE)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -267,8 +326,8 @@ public class DomainImpl implements Domain {
 
     public List<PostalCode> getPostalCodes(final Integer pageSize,
                                            final Integer from,
-                                           final String code,
-                                           final String name,
+                                           final String codeValue,
+                                           final String prefLabel,
                                            final Integer codeType,
                                            final String areaCode,
                                            final String areaName,
@@ -282,13 +341,13 @@ public class DomainImpl implements Domain {
         final List<PostalCode> postalCodes = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTALCODE)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -313,9 +372,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -342,7 +401,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -368,8 +427,8 @@ public class DomainImpl implements Domain {
 
     public List<Municipality> getMunicipalities(final Integer pageSize,
                                                 final Integer from,
-                                                final String code,
-                                                final String name,
+                                                final String codeValue,
+                                                final String prefLabel,
                                                 final Date after,
                                                 final Meta meta) {
 
@@ -378,13 +437,13 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -409,9 +468,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTMANAGEMENTDISTRICT)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -438,7 +497,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTMANAGEMENTDISTRICT)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -466,7 +525,7 @@ public class DomainImpl implements Domain {
     public List<PostalCode> getPostManagementDistrictPostalCodes(final Integer pageSize,
                                                                  final Integer from,
                                                                  final Date after,
-                                                                 final String code,
+                                                                 final String codeValue,
                                                                  final Meta meta) {
 
         final ObjectMapper mapper = new ObjectMapper();
@@ -474,9 +533,9 @@ public class DomainImpl implements Domain {
         final List<PostalCode> postalCodes = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTALCODE)
-                .setQuery(QueryBuilders.termQuery("postManagementDistrict.code", code.toLowerCase()))
+                .setQuery(QueryBuilders.termQuery("postManagementDistrict.codeValue", codeValue.toLowerCase()))
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
@@ -500,8 +559,8 @@ public class DomainImpl implements Domain {
 
     public List<PostManagementDistrict> getPostManagementDistricts(final Integer pageSize,
                                                                    final Integer from,
-                                                                   final String code,
-                                                                   final String name,
+                                                                   final String codeValue,
+                                                                   final String prefLabel,
                                                                    final Date after,
                                                                    final Meta meta) {
 
@@ -510,13 +569,13 @@ public class DomainImpl implements Domain {
         final List<PostManagementDistrict> postManagementDistricts = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_POSTMANAGEMENTDISTRICT)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -540,9 +599,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATE)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -569,7 +628,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATE)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -596,7 +655,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getMagistrateMunicipalities(final Integer pageSize,
                                                           final Integer from,
                                                           final Date after,
-                                                          final String code,
+                                                          final String codeValue,
                                                           final String municipalityCode,
                                                           final String municipalityName,
                                                           final Meta meta) {
@@ -606,14 +665,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("magistrate.code.keyword", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("magistrate.codeValue.keyword", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -634,8 +693,8 @@ public class DomainImpl implements Domain {
 
     public List<Magistrate> getMagistrates(final Integer pageSize,
                                            final Integer from,
-                                           final String code,
-                                           final String name,
+                                           final String codeValue,
+                                           final String prefLabel,
                                            final Date after,
                                            final Meta meta) {
 
@@ -644,13 +703,13 @@ public class DomainImpl implements Domain {
         final List<Magistrate> magistrates = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATE)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -675,9 +734,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_REGION)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -704,7 +763,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_REGION)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -731,7 +790,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getRegionMunicipalities(final Integer pageSize,
                                                       final Integer from,
                                                       final Date after,
-                                                      final String code,
+                                                      final String codeValue,
                                                       final String municipalityCode,
                                                       final String municipalityName,
                                                       final Meta meta) {
@@ -741,14 +800,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("region.code", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("region.codeValue", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -769,8 +828,8 @@ public class DomainImpl implements Domain {
 
     public List<Region> getRegions(final Integer pageSize,
                                    final Integer from,
-                                   final String code,
-                                   final String name,
+                                   final String codeValue,
+                                   final String prefLabel,
                                    final Date after,
                                    final Meta meta) {
 
@@ -779,13 +838,13 @@ public class DomainImpl implements Domain {
         final List<Region> regions = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_REGION)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -810,7 +869,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS)
                 .setQuery(QueryBuilders.termQuery("streetNumbers.id.keyword", id.toLowerCase()));
 
@@ -848,7 +907,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -878,13 +937,13 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS);
 
         final BoolQueryBuilder builder = boolQuery();
 
         if (municipalityCode != null) {
-            builder.must(QueryBuilders.prefixQuery("municipality.code.keyword", municipalityCode.toLowerCase()));
+            builder.must(QueryBuilders.prefixQuery("municipality.codeValue.keyword", municipalityCode.toLowerCase()));
         }
 
         if (streetName != null) {
@@ -920,13 +979,13 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS);
 
         final BoolQueryBuilder builder = boolQuery();
 
         if (municipalityCode != null) {
-            builder.must(QueryBuilders.prefixQuery("municipality.code.keyword", municipalityCode.toLowerCase()));
+            builder.must(QueryBuilders.prefixQuery("municipality.codeValue.keyword", municipalityCode.toLowerCase()));
         }
 
         if (streetName != null) {
@@ -980,9 +1039,9 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
@@ -1008,7 +1067,7 @@ public class DomainImpl implements Domain {
 
     public List<StreetAddress> getStreetAddresses(final Integer pageSize,
                                                   final Integer from,
-                                                  final String name,
+                                                  final String prefLabel,
                                                   final Date after,
                                                   final Meta meta) {
 
@@ -1017,13 +1076,13 @@ public class DomainImpl implements Domain {
         final List<StreetAddress> streetAddresses = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS)
                 .addSort("names.fi.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(null, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(null, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1044,7 +1103,7 @@ public class DomainImpl implements Domain {
 
     public List<StreetAddress> getStreetAddressesWithMunicipality(final Integer pageSize,
                                                                   final Integer from,
-                                                                  final String name,
+                                                                  final String prefLabel,
                                                                   final String municipalityCode,
                                                                   final Date after,
                                                                   final Meta meta) {
@@ -1054,14 +1113,14 @@ public class DomainImpl implements Domain {
         final List<StreetAddress> streetAddresses = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_STREETADDRESS)
                 .addSort("names.fi.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(null, name, after);
-        builder.must(QueryBuilders.termQuery("municipality.code.keyword", municipalityCode.toLowerCase()));
+        final BoolQueryBuilder builder = constructSearchQuery(null, prefLabel, after);
+        builder.must(QueryBuilders.termQuery("municipality.codeValue.keyword", municipalityCode.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1086,9 +1145,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_HEALTHCAREDISTRICT)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -1115,7 +1174,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_HEALTHCAREDISTRICT)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -1142,7 +1201,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getHealthCareDistrictMunicipalities(final Integer pageSize,
                                                                   final Integer from,
                                                                   final Date after,
-                                                                  final String code,
+                                                                  final String codeValue,
                                                                   final String municipalityCode,
                                                                   final String municipalityName,
                                                                   final Meta meta) {
@@ -1152,14 +1211,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("healthCareDistrict.code.keyword", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("healthCareDistrict.codeValue.keyword", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1180,8 +1239,8 @@ public class DomainImpl implements Domain {
 
     public List<HealthCareDistrict> getHealthCareDistricts(final Integer pageSize,
                                                            final Integer from,
-                                                           final String code,
-                                                           final String name,
+                                                           final String codeValue,
+                                                           final String prefLabel,
                                                            final Date after,
                                                            final Meta meta) {
 
@@ -1190,13 +1249,13 @@ public class DomainImpl implements Domain {
         final List<HealthCareDistrict> healthCareDistricts = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_HEALTHCAREDISTRICT)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1221,9 +1280,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATESERVICEUNIT)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -1250,7 +1309,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATESERVICEUNIT)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -1277,7 +1336,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getMagistrateServiceUnitMunicipalities(final Integer pageSize,
                                                                      final Integer from,
                                                                      final Date after,
-                                                                     final String code,
+                                                                     final String codeValue,
                                                                      final String municipalityName,
                                                                      final String municipalityCode,
                                                                      final Meta meta) {
@@ -1287,14 +1346,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("magistrateServiceUnit.code", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("magistrateServiceUnit.codeValue", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1315,8 +1374,8 @@ public class DomainImpl implements Domain {
 
     public List<MagistrateServiceUnit> getMagistrateServiceUnits(final Integer pageSize,
                                                                  final Integer from,
-                                                                 final String code,
-                                                                 final String name,
+                                                                 final String codeValue,
+                                                                 final String prefLabel,
                                                                  final Date after,
                                                                  final Meta meta) {
 
@@ -1325,13 +1384,13 @@ public class DomainImpl implements Domain {
         final List<MagistrateServiceUnit> magistrateServiceUnits = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MAGISTRATESERVICEUNIT)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1356,9 +1415,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_ELECTORALDISTRICT)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -1385,7 +1444,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_ELECTORALDISTRICT)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -1412,7 +1471,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getElectoralDistrictMunicipalities(final Integer pageSize,
                                                                  final Integer from,
                                                                  final Date after,
-                                                                 final String code,
+                                                                 final String codeValue,
                                                                  final String municipalityCode,
                                                                  final String municipalityName,
                                                                  final Meta meta) {
@@ -1422,14 +1481,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("electoralDistrict.code", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("electoralDistrict.codeValue", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1451,8 +1510,8 @@ public class DomainImpl implements Domain {
 
     public List<ElectoralDistrict> getElectoralDistricts(final Integer pageSize,
                                                          final Integer from,
-                                                         final String code,
-                                                         final String name,
+                                                         final String codeValue,
+                                                         final String prefLabel,
                                                          final Date after,
                                                          final Meta meta) {
 
@@ -1461,13 +1520,13 @@ public class DomainImpl implements Domain {
         final List<ElectoralDistrict> electoralDistricts = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_ELECTORALDISTRICT)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1492,9 +1551,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSSERVICESUBREGION)
-                .setQuery(QueryBuilders.termQuery("code", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -1521,7 +1580,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSSERVICESUBREGION)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -1548,7 +1607,7 @@ public class DomainImpl implements Domain {
     public List<Municipality> getBusinessServiceSubRegionMunicipalities(final Integer pageSize,
                                                                         final Integer from,
                                                                         final Date after,
-                                                                        final String code,
+                                                                        final String codeValue,
                                                                         final String municipalityCode,
                                                                         final String municipalityName,
                                                                         final Meta meta) {
@@ -1558,14 +1617,14 @@ public class DomainImpl implements Domain {
         final List<Municipality> municipalities = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_MUNICIPALITY)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
         final BoolQueryBuilder builder = constructSearchQuery(municipalityCode, municipalityName, after);
-        builder.must(QueryBuilders.termQuery("businessServiceSubRegion.code", code.toLowerCase()));
+        builder.must(QueryBuilders.termQuery("businessServiceSubRegion.codeValue", codeValue.toLowerCase()));
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1586,8 +1645,8 @@ public class DomainImpl implements Domain {
 
     public List<BusinessServiceSubRegion> getBusinessServiceSubRegions(final Integer pageSize,
                                                                        final Integer from,
-                                                                       final String code,
-                                                                       final String name,
+                                                                       final String codeValue,
+                                                                       final String prefLabel,
                                                                        final Date after,
                                                                        final Meta meta) {
 
@@ -1596,13 +1655,13 @@ public class DomainImpl implements Domain {
         final List<BusinessServiceSubRegion> businessServiceSubRegions = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSSERVICESUBREGION)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         searchRequest.setQuery(builder);
 
         final SearchResponse response = searchRequest.execute().actionGet();
@@ -1627,9 +1686,9 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSID)
-                .setQuery(QueryBuilders.termQuery("code.keyword", code.toLowerCase()));
+                .setQuery(QueryBuilders.termQuery("codeValue.keyword", code.toLowerCase()));
 
         final SearchResponse response = searchRequest.execute().actionGet();
 
@@ -1656,7 +1715,7 @@ public class DomainImpl implements Domain {
         final ObjectMapper mapper = new ObjectMapper();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSID)
                 .setQuery(QueryBuilders.termQuery("id.keyword", id.toLowerCase()));
 
@@ -1682,8 +1741,8 @@ public class DomainImpl implements Domain {
 
     public List<BusinessId> getBusinessIds(final Integer pageSize,
                                            final Integer from,
-                                           final String code,
-                                           final String name,
+                                           final String codeValue,
+                                           final String prefLabel,
                                            final Date after,
                                            final Meta meta) {
 
@@ -1692,13 +1751,13 @@ public class DomainImpl implements Domain {
         final List<BusinessId> businessIds = new ArrayList<>();
 
         final SearchRequestBuilder searchRequest = m_client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                .prepareSearch(DomainConstants.ELASTIC_INDEX_CUSTOMCODES)
                 .setTypes(DomainConstants.ELASTIC_TYPE_BUSINESSID)
-                .addSort("code.keyword", SortOrder.ASC)
+                .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
-        final BoolQueryBuilder builder = constructSearchQuery(code, name, after);
+        final BoolQueryBuilder builder = constructSearchQuery(codeValue, prefLabel, after);
         builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.regexpQuery("names.fi", "~(null)"), ScoreMode.None));
         searchRequest.setQuery(builder);
 
@@ -1719,18 +1778,18 @@ public class DomainImpl implements Domain {
     }
 
 
-    private BoolQueryBuilder constructSearchQuery(final String code,
-                                                  final String name,
+    private BoolQueryBuilder constructSearchQuery(final String codeValue,
+                                                  final String prefLabel,
                                                   final Date after) {
 
         final BoolQueryBuilder builder = boolQuery();
 
-        if (code != null) {
-            builder.must(QueryBuilders.prefixQuery("code.keyword", code.toLowerCase()));
+        if (codeValue != null) {
+            builder.must(QueryBuilders.prefixQuery("codeValue.keyword", codeValue.toLowerCase()));
         }
 
-        if (name != null) {
-            builder.must(QueryBuilders.nestedQuery("names", QueryBuilders.multiMatchQuery(name.toLowerCase() + "*", "names.fi", "names.se").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+        if (prefLabel != null) {
+            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.se", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
 
         if (after != null) {

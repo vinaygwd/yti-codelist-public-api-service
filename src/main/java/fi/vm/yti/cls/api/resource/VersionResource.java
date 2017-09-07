@@ -1,7 +1,5 @@
 package fi.vm.yti.cls.api.resource;
 
-import fi.vm.yti.cls.api.AppInitializer;
-import fi.vm.yti.cls.api.PublicApiServiceApplication;
 import fi.vm.yti.cls.api.configuration.VersionInformation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

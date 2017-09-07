@@ -62,7 +62,7 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public ListResponseWrapper<MagistrateServiceUnit> getMagistrateServiceUnits(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                                                 @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                                                @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
+                                                                                @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
                                                                                 @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                                                                 @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -71,7 +71,7 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
 
-        final List<MagistrateServiceUnit> magistrateServiceUnits = m_domain.getMagistrateServiceUnits(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<MagistrateServiceUnit> magistrateServiceUnits = m_domain.getMagistrateServiceUnits(pageSize, from, codeValue, name, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATESERVICEUNITS, after, pageSize, from + pageSize));
@@ -94,16 +94,16 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one magistrateserviceunit.", response = Municipality.class)
     @ApiResponse(code = 200, message = "Returns a magistrateserviceunit matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMagistrateServiceUnit(@ApiParam(value = "MagistrateServiceUnit code.") @PathParam("code") final String code,
+    public Response getMagistrateServiceUnit(@ApiParam(value = "MagistrateServiceUnit code.") @PathParam("codeValue") final String codeValue,
                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/magistrateserviceunits/" + code + "/ requested!");
+        LOG.info("/v1/magistrateserviceunits/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATESERVICEUNIT, expand)));
 
-        final MagistrateServiceUnit magistrateServiceUnit = m_domain.getMagistrateServiceUnit(code);
+        final MagistrateServiceUnit magistrateServiceUnit = m_domain.getMagistrateServiceUnit(codeValue);
 
         return Response.ok(magistrateServiceUnit).build();
 
@@ -136,7 +136,7 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMagistrateServiceUnitMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                            @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                           @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
+                                                           @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCode,
                                                            @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
                                                            @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                            @ApiParam(value = "MagistrateServiceUnit code.") @PathParam("resourcecode") final String resourcecode,

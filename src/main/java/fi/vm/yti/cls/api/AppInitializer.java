@@ -12,8 +12,6 @@ import fi.vm.yti.cls.api.configuration.VersionInformation;
 import fi.vm.yti.cls.api.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -108,9 +106,8 @@ public class AppInitializer {
 
         FileOutputStream fos = null;
 
-        try {
+        try (final InputStream inputStream = FileUtils.loadFileFromClassPath("/swagger/swagger.json")) {
 
-            final InputStream inputStream = FileUtils.loadFileFromClassPath("/swagger/swagger.json");
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(new InputStreamReader(inputStream, "UTF-8"));
 
             final String hostname = m_apiUtils.getPublicApiServiceHostname();

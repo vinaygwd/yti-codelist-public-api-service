@@ -62,7 +62,7 @@ public class MagistrateResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMagistrates(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                   @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
+                                   @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
                                    @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                    @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -71,7 +71,7 @@ public class MagistrateResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<Magistrate> magistrates = m_domain.getMagistrates(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<Magistrate> magistrates = m_domain.getMagistrates(pageSize, from, codeValue, name, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATES, after, pageSize, from + pageSize));
@@ -94,16 +94,16 @@ public class MagistrateResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one magistrate.", response = Magistrate.class)
     @ApiResponse(code = 200, message = "Returns a magistrate matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMagistrate(@ApiParam(value = "Magistrate code.") @PathParam("code") final String code,
+    public Response getMagistrate(@ApiParam(value = "Magistrate code.") @PathParam("codeValue") final String codeValue,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/magistrates/" + code + "/ requested!");
+        LOG.info("/v1/magistrates/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATE, expand)));
 
-        final Magistrate magistrate = m_domain.getMagistrate(code);
+        final Magistrate magistrate = m_domain.getMagistrate(codeValue);
 
         return Response.ok(magistrate).build();
 
@@ -136,7 +136,7 @@ public class MagistrateResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMagistrateMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                                          @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                                         @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
+                                                                         @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCode,
                                                                          @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
                                                                          @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                          @ApiParam(value = "MagistrateServiceUnit code.") @PathParam("resourcecode") final String resourcecode,

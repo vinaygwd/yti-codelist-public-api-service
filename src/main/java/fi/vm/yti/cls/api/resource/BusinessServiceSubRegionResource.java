@@ -64,7 +64,7 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessServiceSubRegions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                  @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                 @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
+                                                 @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
                                                  @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                                  @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -73,7 +73,7 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<BusinessServiceSubRegion> businessServiceSubRegions = m_domain.getBusinessServiceSubRegions(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<BusinessServiceSubRegion> businessServiceSubRegions = m_domain.getBusinessServiceSubRegions(pageSize, from, codeValue, name, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSSERVICESUBREGIONS, after, pageSize, from + pageSize));
@@ -96,16 +96,16 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one businessservicesubregion.", response = ElectoralDistrict.class)
     @ApiResponse(code = 200, message = "Returns a businessservicesubregion matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getBusinessServiceSubRegion(@ApiParam(value = "BusinessServiceSubRegion code.") @PathParam("code") final String code,
+    public Response getBusinessServiceSubRegion(@ApiParam(value = "BusinessServiceSubRegion code.") @PathParam("codeValue") final String codeValue,
                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/businessservicesubregions/" + code + "/ requested!");
+        LOG.info("/v1/businessservicesubregions/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSSERVICESUBREGION, expand)));
 
-        final BusinessServiceSubRegion businessServiceSubRegion = m_domain.getBusinessServiceSubRegion(code);
+        final BusinessServiceSubRegion businessServiceSubRegion = m_domain.getBusinessServiceSubRegion(codeValue);
 
         return Response.ok(businessServiceSubRegion).build();
 
@@ -138,8 +138,8 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessServiceSubRegionMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                               @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                              @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
-                                                              @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
+                                                              @ApiParam(value = "Search parameter for municipality codeValue, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCodeValue,
+                                                              @ApiParam(value = "Search parameter for municipality prefLabel, prefix style wildcard support.") @QueryParam("prefLabel") final String municipalityPrefLabel,
                                                               @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                               @ApiParam(value = "BusinessServiceSubRegion code.") @PathParam("resourcecode") final String resourcecode,
                                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -148,7 +148,7 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<Municipality> municipalities = m_domain.getBusinessServiceSubRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
+        final List<Municipality> municipalities = m_domain.getBusinessServiceSubRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCodeValue, municipalityPrefLabel, meta);
 
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);

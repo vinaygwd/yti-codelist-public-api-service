@@ -2,7 +2,7 @@ package fi.vm.yti.cls.api.configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import fi.vm.yti.cls.api.api.ApiConstants;
-import fi.vm.yti.cls.api.resource.RegisterResource;
+import fi.vm.yti.cls.api.resource.CodeRegistryResource;
 import fi.vm.yti.cls.api.resource.BusinessIdResource;
 import fi.vm.yti.cls.api.resource.BusinessServiceSubRegionResource;
 import fi.vm.yti.cls.api.resource.ElectoralDistrictResource;
@@ -78,7 +78,7 @@ public class JerseyConfig extends ResourceConfig {
         register(BusinessIdResource.class);
 
         // API: Generic Register resources.
-        register(RegisterResource.class);
+        register(CodeRegistryResource.class);
 
     }
 

@@ -45,10 +45,15 @@ abstract class AbstractBaseResource {
 
     public static final String FILTER_NAME_MAGISTRATESERVICEUNIT = "magistrateServiceUnit";
 
-    public static final String FILTER_NAME_REGISTER = "register";
+    public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
 
-    public static final String FILTER_NAME_REGISTER_ITEM = "registerItem";
+    public static final String FILTER_NAME_CODESCHEME = "codeScheme";
 
+    public static final String FILTER_NAME_CODE = "code";
+
+    public static final String FIELD_NAME_URI = "uri";
+
+    
     static class FilterModifier extends ObjectWriterModifier {
 
         private final FilterProvider provider;
@@ -81,20 +86,21 @@ abstract class AbstractBaseResource {
                                                            final String expand) {
 
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-        filterProvider.addFilter(FILTER_NAME_MUNICIPALITY, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_MAGISTRATE, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_POSTALCODE, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_REGION, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_STREETADDRESS, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_STREETNUMBER, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_MAGISTRATESERVICEUNIT, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_BUSINESSID, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_HEALTHCAREDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_ELECTORALDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_BUSINESSSERVICESUBREGION, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_POSTMANAGEMENTDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_REGISTER, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
-        filterProvider.addFilter(FILTER_NAME_REGISTER_ITEM, SimpleBeanPropertyFilter.filterOutAllExcept("url"));
+        filterProvider.addFilter(FILTER_NAME_MUNICIPALITY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_MAGISTRATE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_POSTALCODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_REGION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_STREETADDRESS, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_STREETNUMBER, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_MAGISTRATESERVICEUNIT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_BUSINESSID, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_HEALTHCAREDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_ELECTORALDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_BUSINESSSERVICESUBREGION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_POSTMANAGEMENTDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.setFailOnUnknownId(false);
 
         for (final String baseFilter : baseFilters) {

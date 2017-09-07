@@ -67,8 +67,8 @@ public class MunicipalityResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                       @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                      @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
-                                      @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
+                                      @ApiParam(value = "Search parameter for codeValue, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
+                                      @ApiParam(value = "Search parameter for prefLabel, prefix style wildcard support.") @QueryParam("prefLabel") final String prefLabel,
                                       @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
@@ -76,7 +76,7 @@ public class MunicipalityResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<Municipality> municipalities = m_domain.getMunicipalities(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<Municipality> municipalities = m_domain.getMunicipalities(pageSize, from, codeValue, prefLabel, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MUNICIPALITIES, after, pageSize, from + pageSize));
@@ -99,16 +99,16 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one municipality.", response = Municipality.class)
     @ApiResponse(code = 200, message = "Returns a municipality matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipality(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipality(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MUNICIPALITY, expand)));
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         return Response.ok(municipality).build();
 
@@ -137,14 +137,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return magistrate of the municipality.", response = Magistrate.class)
     @ApiResponse(code = 200, message = "Returns the magistrate of the municipality in JSON format.")
-    @Path("/{code}/magistrate/")
+    @Path("/{codeValue}/magistrate/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityMagistrate(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityMagistrate(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/magistrate/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/magistrate/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATE, expand)));
 
@@ -158,14 +158,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return region of the municipality.", response = Region.class)
     @ApiResponse(code = 200, message = "Returns the region of the municipality in JSON format.")
-    @Path("/{code}/region/")
+    @Path("/{codeValue}/region/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityRegion(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityRegion(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/region/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/region/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_REGION, expand)));
 
@@ -179,14 +179,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return healthcaredistrict of the municipality.", response = HealthCareDistrict.class)
     @ApiResponse(code = 200, message = "Returns the healthcaredistrict of the municipality in JSON format.")
-    @Path("/{code}/healthcaredistrict/")
+    @Path("/{codeValue}/healthcaredistrict/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityHealthCareDistrict(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityHealthCareDistrict(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/healthcaredistrict/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/healthcaredistrict/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_HEALTHCAREDISTRICT, expand)));
 
@@ -200,14 +200,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return electoraldistrict of the municipality.", response = ElectoralDistrict.class)
     @ApiResponse(code = 200, message = "Returns the electoraldistrict of the municipality in JSON format.")
-    @Path("/{code}/electoraldistrict/")
+    @Path("/{codeValue}/electoraldistrict/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityElectoralDistrict(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityElectoralDistrict(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/electoraldistrict/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/electoraldistrict/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_ELECTORALDISTRICT, expand)));
 
@@ -221,14 +221,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return magistrateserviceunit of the municipality.", response = MagistrateServiceUnit.class)
     @ApiResponse(code = 200, message = "Returns the magistrateserviceunit of the municipality in JSON format.")
-    @Path("/{code}/magistrateserviceunit/")
+    @Path("/{codeValue}/magistrateserviceunit/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityMagistrateServiceUnit(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityMagistrateServiceUnit(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/magistrateserviceunit/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/magistrateserviceunit/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATESERVICEUNIT, expand)));
 
@@ -242,14 +242,14 @@ public class MunicipalityResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return businessservicesubregion of the municipality.", response = BusinessServiceSubRegion.class)
     @ApiResponse(code = 200, message = "Returns the businessservicesubregion of the municipality in JSON format.")
-    @Path("/{code}/businessservicesubregion/")
+    @Path("/{codeValue}/businessservicesubregion/")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMunicipalityBusinessServiceSubRegion(@ApiParam(value = "Municipality code.") @PathParam("code") final String code,
+    public Response getMunicipalityBusinessServiceSubRegion(@ApiParam(value = "Municipality code.") @PathParam("codeValue") final String codeValue,
                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/municipalities/" + code + "/businessservicesubregion/ requested!");
+        LOG.info("/v1/municipalities/" + codeValue + "/businessservicesubregion/ requested!");
 
-        final Municipality municipality = m_domain.getMunicipality(code);
+        final Municipality municipality = m_domain.getMunicipality(codeValue);
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSSERVICESUBREGION, expand)));
 

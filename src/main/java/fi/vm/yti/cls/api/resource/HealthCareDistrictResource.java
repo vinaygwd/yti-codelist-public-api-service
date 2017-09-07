@@ -62,8 +62,8 @@ public class HealthCareDistrictResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getHealthCareDistricts(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                            @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                           @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
-                                           @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
+                                           @ApiParam(value = "Search parameter for codeValue, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
+                                           @ApiParam(value = "Search parameter for prefLabel, prefix style wildcard support.") @QueryParam("name") final String prefLabel,
                                            @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
@@ -71,7 +71,7 @@ public class HealthCareDistrictResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<HealthCareDistrict> healthCareDistricts = m_domain.getHealthCareDistricts(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<HealthCareDistrict> healthCareDistricts = m_domain.getHealthCareDistricts(pageSize, from, codeValue, prefLabel, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_HEALTHCAREDISTRICTS, after, pageSize, from + pageSize));
@@ -94,16 +94,16 @@ public class HealthCareDistrictResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one healthcaredistrict.", response = HealthCareDistrict.class)
     @ApiResponse(code = 200, message = "Returns a healthcaredistrict matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getHealthCareDistrict(@ApiParam(value = "HealthCareDistrict code.") @PathParam("code") final String code,
+    public Response getHealthCareDistrict(@ApiParam(value = "HealthCareDistrict code.") @PathParam("codeValue") final String codeValue,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/healthcaredistricts/" + code + "/ requested!");
+        LOG.info("/v1/healthcaredistricts/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_HEALTHCAREDISTRICT, expand)));
 
-        final HealthCareDistrict healthCareDistrict = m_domain.getHealthCareDistrict(code);
+        final HealthCareDistrict healthCareDistrict = m_domain.getHealthCareDistrict(codeValue);
 
         return Response.ok(healthCareDistrict).build();
 
@@ -136,8 +136,8 @@ public class HealthCareDistrictResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getHealthCareDistrictMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                         @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                        @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
-                                                        @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
+                                                        @ApiParam(value = "Search parameter for municipality codeValue, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCodeValue,
+                                                        @ApiParam(value = "Search parameter for municipality prefLabel, prefix style wildcard support.") @QueryParam("prefLabel") final String municipalityPrefLabel,
                                                         @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                         @ApiParam(value = "HealthCareDistrict code.") @PathParam("resourcecode") final String resourcecode,
                                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -146,7 +146,7 @@ public class HealthCareDistrictResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(200, pageSize, from, after);
 
-        final List<Municipality> municipalities = m_domain.getHealthCareDistrictMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
+        final List<Municipality> municipalities = m_domain.getHealthCareDistrictMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCodeValue, municipalityPrefLabel, meta);
 
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);

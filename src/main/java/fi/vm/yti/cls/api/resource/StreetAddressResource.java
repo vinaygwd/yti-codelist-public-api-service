@@ -220,7 +220,7 @@ public class StreetAddressResource extends AbstractBaseResource {
         }
 
         final SpecificStreetAddress address = new SpecificStreetAddress(streetAddress);
-        address.setUrl(m_apiUtils.createResourceUrl(ApiConstants.API_PATH_STREETADDRESSES, "municipality/" + municipalityCode + "/" + streetName + "/" + number));
+        address.setUri(m_apiUtils.createResourceUrl(ApiConstants.API_PATH_STREETADDRESSES, "municipality/" + municipalityCode + "/" + streetName + "/" + number));
         address.setNumber(numberInt);
         address.setPostalCode(streetNumber.getPostalCode());
 
@@ -272,7 +272,7 @@ public class StreetAddressResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getStreetAddressMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from")  @DefaultValue("0") final Integer from,
-                                                   @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
+                                                   @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCode,
                                                    @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
                                                    @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                    @ApiParam(value = "StreetAddress id.") @PathParam("id") final String id,

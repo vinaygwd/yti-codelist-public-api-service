@@ -62,7 +62,7 @@ public class ElectoralDistrictResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getElectoralDistricts(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                           @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                          @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("code") final String code,
+                                          @ApiParam(value = "Search parameter for code, prefix style wildcard support.") @QueryParam("codeValue") final String codeValue,
                                           @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                           @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -71,7 +71,7 @@ public class ElectoralDistrictResource extends AbstractBaseResource {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
 
-        final List<ElectoralDistrict> electoralDistricts = m_domain.getElectoralDistricts(pageSize, from, code, name, meta.getAfter(), meta);
+        final List<ElectoralDistrict> electoralDistricts = m_domain.getElectoralDistricts(pageSize, from, codeValue, name, meta.getAfter(), meta);
 
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_ELECTORALDISTRICTS, after, pageSize, from + pageSize));
@@ -94,16 +94,16 @@ public class ElectoralDistrictResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return one electoraldistrict.", response = ElectoralDistrict.class)
     @ApiResponse(code = 200, message = "Returns a electoraldistrict matching code in JSON format.")
-    @Path("{code}")
+    @Path("{codeValue}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getElectoralDistrict(@ApiParam(value = "ElectoralDistrict code.") @PathParam("code") final String code,
+    public Response getElectoralDistrict(@ApiParam(value = "ElectoralDistrict code.") @PathParam("codeValue") final String codeValue,
                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/electoraldistricts/" + code + "/ requested!");
+        LOG.info("/v1/electoraldistricts/" + codeValue + "/ requested!");
 
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_ELECTORALDISTRICT, expand)));
 
-        final ElectoralDistrict electoralDistrict = m_domain.getElectoralDistrict(code);
+        final ElectoralDistrict electoralDistrict = m_domain.getElectoralDistrict(codeValue);
 
         return Response.ok(electoralDistrict).build();
 
@@ -132,21 +132,21 @@ public class ElectoralDistrictResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return municipalities for electoraldistrict.", response = Municipality.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns municipalities for a healthcaredistrict in JSON format.")
-    @Path("/{resourcecode}/municipalities")
+    @Path("/{resourcecodevalue}/municipalities")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getElectoralDistrictMunicipalities(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                        @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                       @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("code") final String municipalityCode,
-                                                       @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("name") final String municipalityName,
+                                                       @ApiParam(value = "Search parameter for municipality code, prefix style wildcard support.") @QueryParam("codeValue") final String municipalityCodeValue,
+                                                       @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("prefLabel") final String municipalityPrefLabel,
                                                        @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                       @ApiParam(value = "ElectoralDistrict code.") @PathParam("resourcecode") final String resourcecode,
+                                                       @ApiParam(value = "ElectoralDistrict code.") @PathParam("resourcecodevalue") final String resourcecodevalue,
                                                        @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
-        LOG.info("/v1/electoraldistricts/" + resourcecode + "/municipalities/ requested!");
+        LOG.info("/v1/electoraldistricts/" + resourcecodevalue + "/municipalities/ requested!");
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
 
-        final List<Municipality> municipalities = m_domain.getElectoralDistrictMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
+        final List<Municipality> municipalities = m_domain.getElectoralDistrictMunicipalities(pageSize, from, meta.getAfter(), resourcecodevalue, municipalityCodeValue, municipalityPrefLabel, meta);
 
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);
