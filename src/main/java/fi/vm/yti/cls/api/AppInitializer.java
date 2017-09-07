@@ -13,7 +13,6 @@ import fi.vm.yti.cls.api.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import javax.inject.Inject;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,50 +29,33 @@ import java.util.List;
 public class AppInitializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
-
     public static final String LOCAL_SWAGGER_DATA_DIR = "/data/cls/cls-api/swagger/";
-
-    private final ApiUtils m_apiUtils;
-
-    private final PublicApiServiceProperties m_publicApiServiceProperties;
-
-    private final VersionInformation m_versionInformation;
-
-
-
+    private final ApiUtils apiUtils;
+    private final PublicApiServiceProperties publicApiServiceProperties;
+    private final VersionInformation versionInformation;
 
 
     @Inject
     public AppInitializer(final VersionInformation versionInformation,
                           final ApiUtils apiUtils,
                           final PublicApiServiceProperties publicApiServiceProperties) {
-
-        m_versionInformation = versionInformation;
-
-        m_apiUtils = apiUtils;
-
-        m_publicApiServiceProperties = publicApiServiceProperties;
-
+        this.versionInformation = versionInformation;
+        this.apiUtils = apiUtils;
+        this.publicApiServiceProperties = publicApiServiceProperties;
     }
-
 
     /**
      * Initialize the application, load data for services.
      */
     public void initialize() {
-
         printLogo();
-
         updateSwaggerHost();
-
     }
-
 
     /**
      * Application logo printout to log.
      */
     private void printLogo() {
-
         LOG.info("");
         LOG.info("       .__                                 ___.   .__  .__        ");
         LOG.info("  ____ |  |   ______           ______  __ _\\_ |__ |  | |__| ____  ");
@@ -88,11 +70,9 @@ public class AppInitializer {
         LOG.info("(____  /   __/|__| /____  >\\___  >__|    \\_/ |__|\\___  >___  >");
         LOG.info("     \\/|__|             \\/     \\/                    \\/    \\/ ");
         LOG.info("");
-        LOG.info("                --- Version " + m_versionInformation.getVersion() + " starting up. --- ");
+        LOG.info("                --- Version " + versionInformation.getVersion() + " starting up. --- ");
         LOG.info("");
-
     }
-
 
     /**
      * Updates the compile time generated swagger.json with the hostname of the current environment.
@@ -101,45 +81,32 @@ public class AppInitializer {
      */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void updateSwaggerHost() {
-
         final ObjectMapper mapper = new ObjectMapper();
-
         FileOutputStream fos = null;
-
         try (final InputStream inputStream = FileUtils.loadFileFromClassPath("/swagger/swagger.json")) {
-
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(new InputStreamReader(inputStream, "UTF-8"));
-
-            final String hostname = m_apiUtils.getPublicApiServiceHostname();
+            final String hostname = apiUtils.getPublicApiServiceHostname();
             jsonObject.put("host", hostname);
-
             // TODO: Remove this hack once Swagger UI cyclic dependency / Maximum call stack size exceeded issue gets fixed: https://github.com/astaxie/beego/issues/2694
             final ObjectNode definitions = (ObjectNode) jsonObject.get("definitions");
             final JsonNode streetNumber = definitions.get("StreetNumber");
             final ObjectNode streetNumberProperties = (ObjectNode) streetNumber.get("properties");
             streetNumberProperties.remove("streetAddress");
-
-            final String scheme = m_publicApiServiceProperties.getScheme();
+            final String scheme = publicApiServiceProperties.getScheme();
             final List<String> schemes = new ArrayList<>();
             schemes.add(scheme);
             final ArrayNode schemeArray = mapper.valueToTree(schemes);
             jsonObject.putArray("schemes").addAll(schemeArray);
-
             final File file = new File(LOCAL_SWAGGER_DATA_DIR + "swagger.json");
             Files.createDirectories(Paths.get(file.getParentFile().getPath()));
-
             final String fileLocation = file.toString();
             LOG.info("Storing modified swagger.json description with hostname: " + hostname + " to: " + fileLocation);
-
             fos = new FileOutputStream(fileLocation, false);
-
             mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
             fos.write(mapper.writeValueAsString(jsonObject).getBytes(StandardCharsets.UTF_8));
             fos.close();
-
         } catch (IOException e) {
             LOG.error("Swagger JSON parsing failed: " + e.getMessage());
-
         } finally {
             if (fos != null) {
                 try {
@@ -149,7 +116,6 @@ public class AppInitializer {
                 }
             }
         }
-
     }
 
 }

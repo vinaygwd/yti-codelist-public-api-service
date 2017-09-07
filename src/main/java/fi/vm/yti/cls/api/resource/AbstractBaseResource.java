@@ -18,50 +18,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 abstract class AbstractBaseResource {
 
     public static final String FILTER_NAME_STREETADDRESS = "streetAddress";
-
     public static final String FILTER_NAME_STREETNUMBER = "streetNumber";
-
     public static final String FILTER_NAME_MUNICIPALITY = "municipality";
-
     public static final String FILTER_NAME_MAGISTRATE = "magistrate";
-
     public static final String FILTER_NAME_ELECTORALDISTRICT = "electoralDistrict";
-
     public static final String FILTER_NAME_POSTALCODE = "postalCode";
-
     public static final String FILTER_NAME_POSTMANAGEMENTDISTRICT = "postManagementDistrict";
-
     public static final String FILTER_NAME_REGION = "region";
-
     public static final String FILTER_NAME_BUSINESSID = "businessId";
-
     public static final String FILTER_NAME_BUSINESSSERVICESUBREGION = "businessServiceSubRegion";
-
     public static final String FILTER_NAME_HEALTHCAREDISTRICT = "healthCareDistrict";
-
     public static final String FILTER_NAME_MAGISTRATESERVICEUNIT = "magistrateServiceUnit";
-
     public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
-
     public static final String FILTER_NAME_CODESCHEME = "codeScheme";
-
     public static final String FILTER_NAME_CODE = "code";
-
     public static final String FIELD_NAME_URI = "uri";
-
     
     static class FilterModifier extends ObjectWriterModifier {
-
         private final FilterProvider provider;
-
         protected FilterModifier(final FilterProvider provider) {
             this.provider = provider;
         }
-
         @Override
         public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
                                    final MultivaluedMap<String, Object> responseHeaders,
@@ -70,21 +50,17 @@ abstract class AbstractBaseResource {
                                    final JsonGenerator g) throws IOException {
             return w.with(provider);
         }
-
     }
 
     public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
                                                            final String expand) {
         final List<String> baseFilters = new ArrayList<>();
         baseFilters.add(baseFilter);
-
         return createSimpleFilterProvider(baseFilters, expand);
-
     }
 
     public SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
                                                            final String expand) {
-
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
         filterProvider.addFilter(FILTER_NAME_MUNICIPALITY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_MAGISTRATE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
@@ -102,21 +78,16 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.setFailOnUnknownId(false);
-
         for (final String baseFilter : baseFilters) {
             filterProvider.removeFilter(baseFilter);
         }
-
         if (expand != null && !expand.isEmpty()) {
             final List<String> filterOptions = Arrays.asList(expand.split(","));
-
             for (final String filter : filterOptions) {
                 filterProvider.removeFilter(filter);
             }
         }
-
         return filterProvider;
-
     }
 
     Response createErrorResponse(final int errorCode,

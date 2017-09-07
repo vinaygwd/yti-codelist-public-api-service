@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for regions.
  */
@@ -39,22 +38,15 @@ import java.util.List;
 public class RegionResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegionResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public RegionResource(final ApiUtils apiUtils,
                           final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
 
     @GET
     @ApiOperation(value = "Return regions with query parameter filters.", response = Region.class, responseContainer = "List")
@@ -66,30 +58,19 @@ public class RegionResource extends AbstractBaseResource {
                                @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/regions/ requested!");
-
         final Meta meta = new Meta(200, pageSize, from, after);
-
-        final List<Region> regions = m_domain.getRegions(pageSize, from, codeValue, name, meta.getAfter(), meta);
-
+        final List<Region> regions = domain.getRegions(pageSize, from, codeValue, name, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_REGIONS, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_REGIONS, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<Region> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(regions);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_REGIONS, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_REGIONS, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_REGION, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one region.", response = Region.class)
@@ -98,17 +79,11 @@ public class RegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getRegion(@ApiParam(value = "Region code.") @PathParam("codeValue") final String codeValue,
                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/regions/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_REGION, expand)));
-
-        final Region region = m_domain.getRegion(codeValue);
-
+        final Region region = domain.getRegion(codeValue);
         return Response.ok(region).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one region.", response = Region.class)
@@ -117,17 +92,11 @@ public class RegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getRegionWithId(@ApiParam(value = "Region id.") @PathParam("id") final String id,
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/regions/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_REGION, expand)));
-
-        final Region region = m_domain.getRegionWithId(id);
-
+        final Region region = domain.getRegionWithId(id);
         return Response.ok(region).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return municipalities for region.", response = Municipality.class, responseContainer = "List")
@@ -141,23 +110,14 @@ public class RegionResource extends AbstractBaseResource {
                                             @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                             @ApiParam(value = "Region code.") @PathParam("resourcecode") final String resourcecode,
                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/regions/" + resourcecode + "/municipalities/ requested!");
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
-        final List<Municipality> municipalities = m_domain.getRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
-
+        final List<Municipality> municipalities = domain.getRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);
-
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MUNICIPALITY, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
 }

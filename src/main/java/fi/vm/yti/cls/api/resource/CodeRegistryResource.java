@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * REST resources for registeritems.
  */
@@ -40,24 +39,16 @@ import java.util.Set;
 @Api(value = "coderegistries", description = "Operations about coderegistries, codeschemes and codes, .")
 @Produces("text/plain")
 public class CodeRegistryResource extends AbstractBaseResource {
-
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
-
-    private final ApiUtils m_apiUtils;
-
-    private final Domain m_domain;
-
+    private final ApiUtils apiUtils;
+    private final Domain domain;
 
     @Inject
     public CodeRegistryResource(final ApiUtils apiUtils,
                                 final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
     @GET
     @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
@@ -68,27 +59,17 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
                                       @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/coderegistries/ requested!");
-
         final Meta meta = new Meta(200, null, null, after);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
-
         final List<CodeRegistry> registryList = new ArrayList<>();
-
-        final Set<CodeRegistry> registrys = m_domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
+        final Set<CodeRegistry> registrys = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
         registryList.addAll(registrys);
-
         meta.setResultCount(registryList.size());
-
         final ListResponseWrapper<CodeRegistry> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(registryList);
-
         wrapper.setMeta(meta);
-
         return Response.ok(wrapper).build();
-
     }
 
     @GET
@@ -104,29 +85,18 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/ requested!");
-
         final Meta meta = new Meta(200, null, null, after);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-
         final List<CodeScheme> codeSchemesList = new ArrayList<>();
-
-        final Set<CodeScheme> codeSchemes = m_domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
+        final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
         codeSchemesList.addAll(codeSchemes);
-
         meta.setResultCount(codeSchemesList.size());
-
         final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(codeSchemesList);
-
         wrapper.setMeta(meta);
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @Path("{codeRegistryCodeValue}/{codeSchemeCodeValue}")
@@ -141,34 +111,23 @@ public class CodeRegistryResource extends AbstractBaseResource {
                              @ApiParam(value = "Code PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                              @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/ requested!");
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-
-        final List<Code> codes = m_domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
-
+        final List<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<Code> wrapper = new ListResponseWrapper<>();
         wrapper.setMeta(meta);
-
         if (codes == null) {
             meta.setCode(404);
             meta.setMessage("No such resource.");
             return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
         }
-
         wrapper.setResults(codes);
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @Path("{codeRegistryCodeValue}/{codeSchemeCodeValue}/{codeCodeValue}")
@@ -180,15 +139,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                             @ApiParam(value = "Code code.") @PathParam("codeCodeValue") final String codeCodeValue,
                             @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/" + codeCodeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-
-        final Code registerItem = m_domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-
+        final Code registerItem = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         return Response.ok(registerItem).build();
-
     }
 
 }

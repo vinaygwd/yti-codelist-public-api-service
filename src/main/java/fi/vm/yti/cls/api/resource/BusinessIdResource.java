@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for businessids.
  */
@@ -38,22 +37,15 @@ import java.util.List;
 public class BusinessIdResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BusinessIdResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public BusinessIdResource(final ApiUtils apiUtils,
                               final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
 
     @GET
     @ApiOperation(value = "Return businessids with query parameter filters.", response = BusinessId.class, responseContainer = "List")
@@ -65,30 +57,19 @@ public class BusinessIdResource extends AbstractBaseResource {
                                    @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                    @ApiParam(value = "After date filtering parameter, results will be businessids with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessids/ requested!");
-
         final Meta meta = new Meta(200, pageSize, from, after);
-
-        final List<BusinessId> businessIds = m_domain.getBusinessIds(pageSize, from, codeValue, name, meta.getAfter(), meta  );
-
+        final List<BusinessId> businessIds = domain.getBusinessIds(pageSize, from, codeValue, name, meta.getAfter(), meta  );
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSIDS, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSIDS, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<BusinessId> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(businessIds);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSIDS, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSIDS, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSID, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one businessid.", response = BusinessId.class)
@@ -97,17 +78,11 @@ public class BusinessIdResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessId(@ApiParam(value = "BusinessId code.") @PathParam("codeValue") final String codeValue,
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessids/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSID, expand)));
-
-        final BusinessId businessId = m_domain.getBusinessId(codeValue);
-
+        final BusinessId businessId = domain.getBusinessId(codeValue);
         return Response.ok(businessId).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one businessid.", response = BusinessId.class)
@@ -116,15 +91,10 @@ public class BusinessIdResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessIdWithId(@ApiParam(value = "BusinessId id.") @PathParam("id") final String id,
                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessids/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSID, expand)));
-
-        final BusinessId businessId = m_domain.getBusinessIdWithId(id);
-
+        final BusinessId businessId = domain.getBusinessIdWithId(id);
         return Response.ok(businessId).build();
-
     }
 
 }

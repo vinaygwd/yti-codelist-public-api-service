@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for post management districts.
  */
@@ -39,22 +38,15 @@ import java.util.List;
 public class PostManagementDistrictResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostManagementDistrictResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public PostManagementDistrictResource(final ApiUtils apiUtils,
                                           final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
 
     @GET
     @ApiOperation(value = "Return postmanagementdistricts with query parameter filters.", response = PostManagementDistrict.class, responseContainer = "List")
@@ -66,30 +58,19 @@ public class PostManagementDistrictResource extends AbstractBaseResource {
                                                @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("prefLabel") final String prefLabel,
                                                @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postmanagementdistricts/ requested with code: " + codeValue + ", name: " + prefLabel);
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
-        final List<PostManagementDistrict> postManagementDistricts = m_domain.getPostManagementDistricts(pageSize, from, codeValue, prefLabel, meta.getAfter(), meta);
-
+        final List<PostManagementDistrict> postManagementDistricts = domain.getPostManagementDistricts(pageSize, from, codeValue, prefLabel, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTMANAGEMENTDISTRICTS, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTMANAGEMENTDISTRICTS, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<PostManagementDistrict> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(postManagementDistricts);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTMANAGEMENTDISTRICTS, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTMANAGEMENTDISTRICTS, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTMANAGEMENTDISTRICT, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one postmanagementdistrict.", response = PostManagementDistrict.class)
@@ -98,17 +79,11 @@ public class PostManagementDistrictResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostManagementDistrict(@ApiParam(value = "PostManagementDistrict code.") @PathParam("codeValue") final String codeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postmanagementdistricts/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTMANAGEMENTDISTRICT, expand)));
-
-        final PostManagementDistrict postManagementDistrict = m_domain.getPostManagementDistrict(codeValue);
-
+        final PostManagementDistrict postManagementDistrict = domain.getPostManagementDistrict(codeValue);
         return Response.ok(postManagementDistrict).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one postmanagementdistrict.", response = PostManagementDistrict.class)
@@ -117,15 +92,10 @@ public class PostManagementDistrictResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostManagementDistrictWithId(@ApiParam(value = "PostManagementDistrict id.") @PathParam("id") final String id,
                                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postmanagementdistricts/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTMANAGEMENTDISTRICT, expand)));
-
-        final PostManagementDistrict postManagementDistrict = m_domain.getPostManagementDistrictWithId(id);
-
+        final PostManagementDistrict postManagementDistrict = domain.getPostManagementDistrictWithId(id);
         return Response.ok(postManagementDistrict).build();
-
     }
 
     @GET
@@ -138,22 +108,14 @@ public class PostManagementDistrictResource extends AbstractBaseResource {
                                                          @ApiParam(value = "After date filtering parameter, results will be postalcodes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                          @ApiParam(value = "PostalCode code.") @PathParam("codeValue") final String codeValue,
                                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postmanagementdistrict/" + codeValue + "/postalcodes/ requested!");
-
         final Meta meta = new Meta(200, pageSize, from, after);
-
-        final List<PostalCode> postalCodes =  m_domain.getPostManagementDistrictPostalCodes(pageSize, from, meta.getAfter(), codeValue, meta);
-
+        final List<PostalCode> postalCodes =  domain.getPostManagementDistrictPostalCodes(pageSize, from, meta.getAfter(), codeValue, meta);
         final ListResponseWrapper<PostalCode> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(postalCodes);
-
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTMANAGEMENTDISTRICT, expand)));
-
         return Response.ok(wrapper).build();
-
     }
 
 }

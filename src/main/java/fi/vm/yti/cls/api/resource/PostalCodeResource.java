@@ -3,13 +3,13 @@ package fi.vm.yti.cls.api.resource;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.api.ApiUtils;
+import fi.vm.yti.cls.api.api.ErrorWrapper;
 import fi.vm.yti.cls.api.api.ListResponseWrapper;
 import fi.vm.yti.cls.api.domain.Domain;
 import fi.vm.yti.cls.common.model.Meta;
 import fi.vm.yti.cls.common.model.Municipality;
 import fi.vm.yti.cls.common.model.PostManagementDistrict;
 import fi.vm.yti.cls.common.model.PostalCode;
-import fi.vm.yti.cls.api.api.ErrorWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for postalcodes.
  */
@@ -41,22 +40,15 @@ import java.util.List;
 public class PostalCodeResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostalCodeResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public PostalCodeResource(final ApiUtils apiUtils,
                               final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
 
     @GET
     @ApiOperation(value = "Return postalcodes with query parameter filters.", response = PostalCode.class, responseContainer = "List")
@@ -73,30 +65,19 @@ public class PostalCodeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Search parameter for municipality name, prefix style wildcard support.") @QueryParam("municipalityName") final String municipalityName,
                                    @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postalcodes/ requested with codeValue: " + codeValue + ", codePrefLabel: " + codePrefLabel + ", codeType: " + codeType + ", municipalityCode: " + municipalityCode + ", municipalityName: " + municipalityName);
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
-        final List<PostalCode> postalCodes = m_domain.getPostalCodes(pageSize, from, codeValue, codePrefLabel, codeType, areaCode, areaName, municipalityCode, municipalityName, meta.getAfter(), meta);
-
+        final List<PostalCode> postalCodes = domain.getPostalCodes(pageSize, from, codeValue, codePrefLabel, codeType, areaCode, areaName, municipalityCode, municipalityName, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTALCODES, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTALCODES, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<PostalCode> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(postalCodes);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTALCODES, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_POSTALCODES, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTALCODE, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one postal code.", response = PostalCode.class)
@@ -105,21 +86,14 @@ public class PostalCodeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostalCode(@ApiParam(value = "PostalCode code.") @PathParam("codeValue") final String codeValue,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postalcodes/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTALCODE, expand)));
-
-        final PostalCode postalCode = m_domain.getPostalCode(codeValue);
-
+        final PostalCode postalCode = domain.getPostalCode(codeValue);
         if (postalCode == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.POSTALCODE_NOT_FOUND);
         }
-
         return Response.ok(postalCode).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one postal code.", response = PostalCode.class)
@@ -128,19 +102,13 @@ public class PostalCodeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostalCodeWithId(@ApiParam(value = "PostalCode id.") @PathParam("id") final String id,
                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postalcodes/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTALCODE, expand)));
-
-        final PostalCode postalCode = m_domain.getPostalCodeWithId(id);
-
+        final PostalCode postalCode = domain.getPostalCodeWithId(id);
         if (postalCode == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.POSTALCODE_NOT_FOUND);
         }
-
         return Response.ok(postalCode).build();
-
     }
 
     @GET
@@ -150,25 +118,17 @@ public class PostalCodeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostalCodeMunicipality(@ApiParam(value = "PostalCode code.") @PathParam("codeValue") final String codeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postalcodes/" + codeValue + "/municipality/ requested!");
-
-        final PostalCode postalCode = m_domain.getPostalCode(codeValue);
-
+        final PostalCode postalCode = domain.getPostalCode(codeValue);
         if (postalCode == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.POSTALCODE_NOT_FOUND);
         }
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTALCODE, expand)));
-
         final Municipality municipality = postalCode.getMunicipality();
-
         if (municipality == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.MUNICIPALITY_NOT_FOUND);
         }
-
         return Response.ok(municipality).build();
-
     }
 
     @GET
@@ -178,25 +138,17 @@ public class PostalCodeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPostalCodePostManagementDistrict(@ApiParam(value = "PostalCode code.") @PathParam("codeValue") final String codeValue,
                                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/postalcodes/" + codeValue + "/postmanagementdistrict/ requested!");
-
-        final PostalCode postalCode = m_domain.getPostalCode(codeValue);
-
+        final PostalCode postalCode = domain.getPostalCode(codeValue);
         if (postalCode == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.POSTALCODE_NOT_FOUND);
         }
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_POSTALCODE, expand)));
-
         final PostManagementDistrict postManagementDistrict = postalCode.getPostManagementDistrict();
-
         if (postManagementDistrict == null) {
             return createErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), ErrorWrapper.POSTMANAGEMENTDISTRICT_NOT_FOUND);
         }
-
         return Response.ok(postManagementDistrict).build();
-
     }
 
 }

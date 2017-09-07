@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
 
-
 @ConfigurationProperties("application")
 @Component
 public class PublicApiServiceProperties {

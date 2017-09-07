@@ -29,7 +29,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for electoral districts.
  */
@@ -40,23 +39,15 @@ import java.util.List;
 public class BusinessServiceSubRegionResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BusinessServiceSubRegionResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public BusinessServiceSubRegionResource(final ApiUtils apiUtils,
                                             final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
-
 
     @GET
     @ApiOperation(value = "Return businessservicesubregions with query parameter filters.", response = String.class)
@@ -68,30 +59,19 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
                                                  @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                                  @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessservicesubregions/ requested!");
-
         final Meta meta = new Meta(200, pageSize, from, after);
-
-        final List<BusinessServiceSubRegion> businessServiceSubRegions = m_domain.getBusinessServiceSubRegions(pageSize, from, codeValue, name, meta.getAfter(), meta);
-
+        final List<BusinessServiceSubRegion> businessServiceSubRegions = domain.getBusinessServiceSubRegions(pageSize, from, codeValue, name, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSSERVICESUBREGIONS, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSSERVICESUBREGIONS, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<BusinessServiceSubRegion> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(businessServiceSubRegions);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSSERVICESUBREGIONS, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_BUSINESSSERVICESUBREGIONS, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSSERVICESUBREGION, expand)));
-
         return Response.ok(wrapper).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one businessservicesubregion.", response = ElectoralDistrict.class)
@@ -100,17 +80,11 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessServiceSubRegion(@ApiParam(value = "BusinessServiceSubRegion code.") @PathParam("codeValue") final String codeValue,
                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessservicesubregions/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSSERVICESUBREGION, expand)));
-
-        final BusinessServiceSubRegion businessServiceSubRegion = m_domain.getBusinessServiceSubRegion(codeValue);
-
+        final BusinessServiceSubRegion businessServiceSubRegion = domain.getBusinessServiceSubRegion(codeValue);
         return Response.ok(businessServiceSubRegion).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one businessservicesubregion.", response = ElectoralDistrict.class)
@@ -119,17 +93,11 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getBusinessServiceSubRegionWithId(@ApiParam(value = "BusinessServiceSubRegion id.") @PathParam("id") final String id,
                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessservicesubregions/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_BUSINESSSERVICESUBREGION, expand)));
-
-        final BusinessServiceSubRegion businessServiceSubRegion = m_domain.getBusinessServiceSubRegionWithId(id);
-
+        final BusinessServiceSubRegion businessServiceSubRegion = domain.getBusinessServiceSubRegionWithId(id);
         return Response.ok(businessServiceSubRegion).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return municipalities for businessservicesubregion.", response = Municipality.class, responseContainer = "List")
@@ -143,22 +111,14 @@ public class BusinessServiceSubRegionResource extends AbstractBaseResource {
                                                               @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                               @ApiParam(value = "BusinessServiceSubRegion code.") @PathParam("resourcecode") final String resourcecode,
                                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/businessservicesubregions/" + resourcecode + "/municipalities/ requested!");
-
         final Meta meta = new Meta(200, pageSize, from, after);
-
-        final List<Municipality> municipalities = m_domain.getBusinessServiceSubRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCodeValue, municipalityPrefLabel, meta);
-
+        final List<Municipality> municipalities = domain.getBusinessServiceSubRegionMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCodeValue, municipalityPrefLabel, meta);
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);
-
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MUNICIPALITY, expand)));
-
         return Response.ok(wrapper).build();
-
     }
 
 }

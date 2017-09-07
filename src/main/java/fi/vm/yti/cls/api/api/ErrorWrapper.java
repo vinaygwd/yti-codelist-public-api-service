@@ -16,21 +16,14 @@ public class ErrorWrapper {
 
     public static final String MUNICIPALITY_NOT_FOUND = "Municipality not found!";
 
-
-    private Meta m_meta;
-
-
-    public ErrorWrapper() {
-
-    }
-
+    private Meta meta;
 
     public Meta getMeta() {
-        return m_meta;
+        return meta;
     }
 
     public void setMeta(final Meta meta) {
-        m_meta = meta;
+        this.meta = meta;
     }
 
 }

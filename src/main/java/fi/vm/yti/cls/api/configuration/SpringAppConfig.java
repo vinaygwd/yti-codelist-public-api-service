@@ -18,51 +18,41 @@ import org.springframework.http.HttpStatus;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-
 @Configuration
 @PropertySource(value = "classpath", ignoreResourceNotFound = true)
 public class SpringAppConfig {
 
     @Value("${cls_public_api_service_elastic_host}")
-    protected String m_elasticsearchHost;
+    protected String elasticsearchHost;
 
     @Value("${cls_public_api_service_elastic_port}")
-    protected Integer m_elasticsearchPort;
+    protected Integer elasticsearchPort;
 
     @Value("${cls_public_api_service_elastic_cluster}")
-    protected String m_clusterName;
+    protected String clusterName;
 
     @Value(value = "${application.contextPath}")
-    private String m_contextPath;
-
+    private String contextPath;
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-
         return new PropertySourcesPlaceholderConfigurer();
-
     }
-
 
     @Bean
     public EmbeddedServletContainerFactory servletContainer() {
-
         final JettyEmbeddedServletContainerFactory factory = new JettyEmbeddedServletContainerFactory();
         factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
-        factory.setContextPath(m_contextPath);
+        factory.setContextPath(contextPath);
         return factory;
-
     }
-
 
     @Bean
     @SuppressWarnings("resource")
     protected Client elasticsearchClient() throws UnknownHostException {
-
-        final TransportAddress address = new InetSocketTransportAddress(InetAddress.getByName(m_elasticsearchHost), m_elasticsearchPort);
-        final Settings settings = Settings.builder().put("cluster.name", m_clusterName).put("client.transport.ignore_cluster_name", false).put("client.transport.sniff", false).build();
+        final TransportAddress address = new InetSocketTransportAddress(InetAddress.getByName(elasticsearchHost), elasticsearchPort);
+        final Settings settings = Settings.builder().put("cluster.name", clusterName).put("client.transport.ignore_cluster_name", false).put("client.transport.sniff", false).build();
         return new PreBuiltTransportClient(settings).addTransportAddress(address);
-
     }
 
 }

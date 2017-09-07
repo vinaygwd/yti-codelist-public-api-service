@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * REST resources for magistrate service units.
  */
@@ -39,22 +38,15 @@ import java.util.List;
 public class MagistrateServiceUnitResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(MagistrateServiceUnitResource.class);
-
-    private final Domain m_domain;
-
-    private final ApiUtils m_apiUtils;
-
+    private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
     public MagistrateServiceUnitResource(final ApiUtils apiUtils,
                                          final Domain domain) {
-
-        m_apiUtils = apiUtils;
-
-        m_domain = domain;
-
+        this.apiUtils = apiUtils;
+        this.domain = domain;
     }
-
 
     @GET
     @ApiOperation(value = "Return magistrateserviceunits with query parameter filters.", response = MagistrateServiceUnit.class, responseContainer = "List")
@@ -66,30 +58,19 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
                                                                                 @ApiParam(value = "Search parameter for name, prefix style wildcard support.") @QueryParam("name") final String name,
                                                                                 @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/magistrateserviceunits/ requested!");
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
-        final List<MagistrateServiceUnit> magistrateServiceUnits = m_domain.getMagistrateServiceUnits(pageSize, from, codeValue, name, meta.getAfter(), meta);
-
+        final List<MagistrateServiceUnit> magistrateServiceUnits = domain.getMagistrateServiceUnits(pageSize, from, codeValue, name, meta.getAfter(), meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(m_apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATESERVICEUNITS, after, pageSize, from + pageSize));
+            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATESERVICEUNITS, after, pageSize, from + pageSize));
         }
-
         final ListResponseWrapper<MagistrateServiceUnit> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(magistrateServiceUnits);
-
-        meta.setAfterResourceUrl(m_apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATESERVICEUNITS, new Date(System.currentTimeMillis())));
-
+        meta.setAfterResourceUrl(apiUtils.createAfterResourceUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_MAGISTRATESERVICEUNITS, new Date(System.currentTimeMillis())));
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATESERVICEUNIT, expand)));
-
         return wrapper;
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one magistrateserviceunit.", response = Municipality.class)
@@ -98,17 +79,11 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMagistrateServiceUnit(@ApiParam(value = "MagistrateServiceUnit code.") @PathParam("codeValue") final String codeValue,
                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/magistrateserviceunits/" + codeValue + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATESERVICEUNIT, expand)));
-
-        final MagistrateServiceUnit magistrateServiceUnit = m_domain.getMagistrateServiceUnit(codeValue);
-
+        final MagistrateServiceUnit magistrateServiceUnit = domain.getMagistrateServiceUnit(codeValue);
         return Response.ok(magistrateServiceUnit).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return one magistrateserviceunit.", response = Municipality.class)
@@ -117,17 +92,11 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMagistrateServiceUnitWithId(@ApiParam(value = "MagistrateServiceUnit id.") @PathParam("id") final String id,
                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         LOG.info("/v1/magistrateserviceunits/id/" + id + "/ requested!");
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MAGISTRATESERVICEUNIT, expand)));
-
-        final MagistrateServiceUnit magistrateServiceUnit = m_domain.getMagistrateServiceUnitWithId(id);
-
+        final MagistrateServiceUnit magistrateServiceUnit = domain.getMagistrateServiceUnitWithId(id);
         return Response.ok(magistrateServiceUnit).build();
-
     }
-
 
     @GET
     @ApiOperation(value = "Return municipalities for magistrateserviceunit.", response = Municipality.class, responseContainer = "List")
@@ -141,22 +110,14 @@ public class MagistrateServiceUnitResource extends AbstractBaseResource {
                                                            @ApiParam(value = "After date filtering parameter, results will be municipalities with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                            @ApiParam(value = "MagistrateServiceUnit code.") @PathParam("resourcecode") final String resourcecode,
                                                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-
         LOG.info("/v1/magistrateserviceunits/" + resourcecode + "/municipalities/ requested!");
-
-        final List<Municipality> municipalities = m_domain.getMagistrateServiceUnitMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
-
+        final List<Municipality> municipalities = domain.getMagistrateServiceUnitMunicipalities(pageSize, from, meta.getAfter(), resourcecode, municipalityCode, municipalityName, meta);
         final ListResponseWrapper<Municipality> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(municipalities);
-
         wrapper.setMeta(meta);
-
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MUNICIPALITY, expand)));
-
         return Response.ok(wrapper).build();
-
     }
 
 }

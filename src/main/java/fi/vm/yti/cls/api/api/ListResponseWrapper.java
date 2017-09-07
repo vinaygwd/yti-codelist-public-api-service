@@ -6,36 +6,32 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
-
 @XmlRootElement
 @XmlType(propOrder = { "meta", "results" })
 public class ListResponseWrapper<T> {
 
-    private Meta m_meta;
+    private Meta meta;
 
-    private List<T> m_results;
-
+    private List<T> results;
 
     public ListResponseWrapper() {
 
     }
 
-
     public Meta getMeta() {
-        return m_meta;
+        return meta;
     }
 
     public void setMeta(final Meta meta) {
-        m_meta = meta;
+        this.meta = meta;
     }
 
-
     public List<T> getResults() {
-        return m_results;
+        return results;
     }
 
     public void setResults(final List<T> results) {
-        m_results = results;
+        this.results = results;
     }
 
 }

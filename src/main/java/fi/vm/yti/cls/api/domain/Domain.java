@@ -2,7 +2,9 @@ package fi.vm.yti.cls.api.domain;
 
 import fi.vm.yti.cls.common.model.BusinessId;
 import fi.vm.yti.cls.common.model.BusinessServiceSubRegion;
+import fi.vm.yti.cls.common.model.Code;
 import fi.vm.yti.cls.common.model.CodeRegistry;
+import fi.vm.yti.cls.common.model.CodeScheme;
 import fi.vm.yti.cls.common.model.ElectoralDistrict;
 import fi.vm.yti.cls.common.model.HealthCareDistrict;
 import fi.vm.yti.cls.common.model.Magistrate;
@@ -12,15 +14,12 @@ import fi.vm.yti.cls.common.model.Municipality;
 import fi.vm.yti.cls.common.model.PostManagementDistrict;
 import fi.vm.yti.cls.common.model.PostalCode;
 import fi.vm.yti.cls.common.model.Region;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Code;
 import fi.vm.yti.cls.common.model.StreetAddress;
 import fi.vm.yti.cls.common.model.StreetNumber;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
 
 public interface Domain {
 

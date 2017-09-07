@@ -2,9 +2,9 @@ package fi.vm.yti.cls.api.configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import fi.vm.yti.cls.api.api.ApiConstants;
-import fi.vm.yti.cls.api.resource.CodeRegistryResource;
 import fi.vm.yti.cls.api.resource.BusinessIdResource;
 import fi.vm.yti.cls.api.resource.BusinessServiceSubRegionResource;
+import fi.vm.yti.cls.api.resource.CodeRegistryResource;
 import fi.vm.yti.cls.api.resource.ElectoralDistrictResource;
 import fi.vm.yti.cls.api.resource.HealthCareDistrictResource;
 import fi.vm.yti.cls.api.resource.HelloResource;
@@ -26,7 +26,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ApplicationPath;
-
 
 @Component
 @SwaggerDefinition(
