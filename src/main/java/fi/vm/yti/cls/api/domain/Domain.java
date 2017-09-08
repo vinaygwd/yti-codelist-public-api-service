@@ -23,12 +23,17 @@ import java.util.Set;
 
 public interface Domain {
 
+    CodeRegistry getCodeRegistry(final String codeRegistryCodeValue);
+
     Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
                                         final Integer from,
                                         final String codeRegistryCodeValue,
                                         final String codeRegistryPrefLabel,
                                         final Date after,
                                         final Meta meta);
+
+    CodeScheme getCodeScheme(final String codeRegistryCodeValue,
+                             final String codeSchemeCodeValue);
 
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,

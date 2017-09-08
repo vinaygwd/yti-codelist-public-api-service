@@ -51,12 +51,41 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 @Singleton
 @Service
 public class DomainImpl implements Domain {
+
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private Client client;
     private static int MAX_SIZE = 10000;
+
     @Autowired
     private DomainImpl(final Client client) {
         this.client = client;
+    }
+
+    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
+        final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODEREGISTRY)
+                    .addSort("codeValue.keyword", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery();
+            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        final CodeRegistry codeRegistry = mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
+                        return codeRegistry;
+                    }
+                } catch (IOException e) {
+                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
     }
 
     public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
@@ -89,6 +118,35 @@ public class DomainImpl implements Domain {
             });
         }
         return codeRegistries;
+    }
+
+    public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
+                                    final String codeSchemeCodeValue) {
+        final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODESCHEMES)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODESCHEME)
+                    .addSort("codeValue.keyword", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery();
+            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+            builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        final CodeScheme codeScheme = mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                        return codeScheme;
+                    }
+                } catch (IOException e) {
+                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
     }
 
     public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
@@ -148,32 +206,38 @@ public class DomainImpl implements Domain {
     public Code getCode(final String codeRegistryCodeValue,
                         final String codeSchemeCodeValue,
                         final String codeCodeValue) {
-        final ObjectMapper mapper = new ObjectMapper();
-        final SearchRequestBuilder searchRequest = client
-                .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
-                .setTypes(DomainConstants.ELASTIC_TYPE_CODE);
+        final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                    .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
+                    .setTypes(DomainConstants.ELASTIC_TYPE_CODE);
 
-        final BoolQueryBuilder builder = boolQuery();
-        builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
-        builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
-        builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
-        searchRequest.setQuery(builder);
+            final BoolQueryBuilder builder = boolQuery();
+            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
+            builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+            builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            searchRequest.setQuery(builder);
 
-        final SearchResponse response = searchRequest.execute().actionGet();
-        LOG.info("getCode found: " + response.getHits().getTotalHits() + " hits.");
-        if (response.getHits().getTotalHits() > 0) {
-            final SearchHit hit = response.getHits().getAt(0);
-            try {
-                if (hit != null) {
-                    final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
-                    return code;
+            final SearchResponse response = searchRequest.execute().actionGet();
+            LOG.info("getCode found: " + response.getHits().getTotalHits() + " hits.");
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
+                        return code;
+                    }
+                } catch (IOException e) {
+                    LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
-            } catch (IOException e) {
-                LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
             }
+            return null;
+        } else {
+            return null;
         }
-        return null;
     }
+
     public List<Code> getCodes(final Integer pageSize,
                                final Integer from,
                                final String codeRegistryCodeValue,
@@ -192,11 +256,12 @@ public class DomainImpl implements Domain {
                     .addSort("codeValue.keyword", SortOrder.ASC)
                     .setSize(pageSize != null ? pageSize : MAX_SIZE)
                     .setFrom(from != null ? from : 0);
+
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
-            searchRequest.setQuery(builder);
+
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
             Arrays.stream(response.getHits().hits()).forEach(hit -> {

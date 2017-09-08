@@ -49,6 +49,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         this.apiUtils = apiUtils;
         this.domain = domain;
     }
+
     @GET
     @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
@@ -88,14 +89,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/ requested!");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-        final List<CodeScheme> codeSchemesList = new ArrayList<>();
-        final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
-        codeSchemesList.addAll(codeSchemes);
-        meta.setResultCount(codeSchemesList.size());
-        final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
-        wrapper.setResults(codeSchemesList);
-        wrapper.setMeta(meta);
-        return Response.ok(wrapper).build();
+        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+        if (codeRegistry != null) {
+            final List<CodeScheme> codeSchemesList = new ArrayList<>();
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
+            codeSchemesList.addAll(codeSchemes);
+            meta.setResultCount(codeSchemesList.size());
+            final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
+            wrapper.setResults(codeSchemesList);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 
     @GET
@@ -114,19 +122,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/ requested!");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final List<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
-        if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
-        }
-        final ListResponseWrapper<Code> wrapper = new ListResponseWrapper<>();
-        wrapper.setMeta(meta);
-        if (codes == null) {
+        final CodeScheme codeScheme = domain.getCodeScheme(codeSchemeCodeValue, codeRegistryCodeValue);
+        if (codeScheme != null) {
+            final List<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
+            }
+            final ListResponseWrapper<Code> wrapper = new ListResponseWrapper<>();
+            wrapper.setMeta(meta);
+            if (codes == null) {
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            }
+            wrapper.setResults(codes);
+            return Response.ok(wrapper).build();
+        } else {
             meta.setCode(404);
             meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        wrapper.setResults(codes);
-        return Response.ok(wrapper).build();
     }
 
     @GET
@@ -141,8 +156,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/" + codeCodeValue + "/ requested!");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final Code registerItem = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-        return Response.ok(registerItem).build();
+        final Code code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        if (code == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(code).build();
     }
 
 }
