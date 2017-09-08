@@ -122,7 +122,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/ requested!");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final CodeScheme codeScheme = domain.getCodeScheme(codeSchemeCodeValue, codeRegistryCodeValue);
+        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             final List<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
