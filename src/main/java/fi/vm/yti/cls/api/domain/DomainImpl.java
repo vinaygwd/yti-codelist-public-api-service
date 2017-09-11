@@ -1466,7 +1466,6 @@ public class DomainImpl implements Domain {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
             final String afterString = dateFormat.format(after);
             builder.must(boolQuery()
-                    .should(QueryBuilders.rangeQuery("created").gt(afterString))
                     .should(QueryBuilders.rangeQuery("modified").gt(afterString))
                     .minimumShouldMatch(1));
         }
@@ -1479,7 +1478,6 @@ public class DomainImpl implements Domain {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
             final String afterString = dateFormat.format(after);
             final QueryBuilder qb = boolQuery()
-                    .should(QueryBuilders.rangeQuery("created").gt(afterString))
                     .should(QueryBuilders.rangeQuery("modified").gt(afterString))
                     .minimumShouldMatch(1);
             searchRequest.setQuery(qb);
