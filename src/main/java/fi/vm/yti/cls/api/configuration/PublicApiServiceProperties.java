@@ -21,7 +21,6 @@ public class PublicApiServiceProperties {
     @NotNull
     private String contextPath;
 
-
     public String getHost() {
         return host;
     }

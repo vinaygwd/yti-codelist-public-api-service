@@ -54,9 +54,11 @@ import javax.ws.rs.ApplicationPath;
 public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
-
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
         provider.setMapper(new CustomObjectMapper());
+
+        // CORS filtering.
+        register(CorsFilter.class);
 
         // Generic resources.
         register(HelloResource.class);
@@ -78,7 +80,6 @@ public class JerseyConfig extends ResourceConfig {
 
         // API: Generic Register resources.
         register(CodeRegistryResource.class);
-
     }
 
 }

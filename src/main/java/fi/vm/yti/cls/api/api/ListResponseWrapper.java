@@ -14,9 +14,7 @@ public class ListResponseWrapper<T> {
 
     private List<T> results;
 
-    public ListResponseWrapper() {
-
-    }
+    public ListResponseWrapper() { }
 
     public Meta getMeta() {
         return meta;
