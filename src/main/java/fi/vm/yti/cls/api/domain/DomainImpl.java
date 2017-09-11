@@ -61,7 +61,8 @@ public class DomainImpl implements Domain {
         this.client = client;
     }
 
-    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
+    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue,
+                                        final Boolean useId) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -70,7 +71,11 @@ public class DomainImpl implements Domain {
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODEREGISTRY)
                     .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery();
-            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            if (useId) {
+                builder.must(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()));
+            } else {
+                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -121,7 +126,8 @@ public class DomainImpl implements Domain {
     }
 
     public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
-                                    final String codeSchemeCodeValue) {
+                                    final String codeSchemeCodeValue,
+                                    final Boolean useId) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -130,7 +136,11 @@ public class DomainImpl implements Domain {
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODESCHEME)
                     .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery();
-            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+            if (useId) {
+                builder.must(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()));
+            } else {
+                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
+            }
             builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -205,7 +215,8 @@ public class DomainImpl implements Domain {
 
     public Code getCode(final String codeRegistryCodeValue,
                         final String codeSchemeCodeValue,
-                        final String codeCodeValue) {
+                        final String codeCodeValue,
+                        final Boolean useId) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -214,7 +225,11 @@ public class DomainImpl implements Domain {
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODE);
 
             final BoolQueryBuilder builder = boolQuery();
-            builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
+            if (useId) {
+                builder.must(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()));
+            } else {
+                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
+            }
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);

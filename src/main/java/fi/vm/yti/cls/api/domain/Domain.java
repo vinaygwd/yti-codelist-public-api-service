@@ -23,7 +23,8 @@ import java.util.Set;
 
 public interface Domain {
 
-    CodeRegistry getCodeRegistry(final String codeRegistryCodeValue);
+    CodeRegistry getCodeRegistry(final String codeRegistryCodeValue,
+                                 final Boolean useId);
 
     Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
                                         final Integer from,
@@ -33,7 +34,8 @@ public interface Domain {
                                         final Meta meta);
 
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
-                             final String codeSchemeCodeValue);
+                             final String codeSchemeCodeValue,
+                             final Boolean useId);
 
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,
@@ -46,10 +48,10 @@ public interface Domain {
 
     Set<String> getCodeSchemeTypes();
 
-
     Code getCode(final String codeRegistryCodeValue,
                  final String codeSchemeCodeValue,
-                 final String codeCodeValue);
+                 final String codeCodeValue,
+                 final Boolean useId);
 
     List<Code> getCodes(final Integer pageSize,
                         final Integer from,
@@ -59,7 +61,6 @@ public interface Domain {
                         final String prefLabel,
                         final Date after,
                         final Meta meta);
-
 
     PostalCode getPostalCode(final String codeValue);
 
@@ -76,7 +77,6 @@ public interface Domain {
                                     final String municipalityPrefLabel,
                                     final Date after,
                                     final Meta meta);
-
 
     PostManagementDistrict getPostManagementDistrict(final String codeValue);
 
@@ -95,7 +95,6 @@ public interface Domain {
                                                             final Date after,
                                                             final Meta meta);
 
-
     Municipality getMunicipality(final String codeValue);
 
     Municipality getMunicipalityWithId(final String id);
@@ -106,7 +105,6 @@ public interface Domain {
                                          final String prefLabel,
                                          final Date after,
                                          final Meta meta);
-
 
     Magistrate getMagistrate(final String codeValue);
 
@@ -127,7 +125,6 @@ public interface Domain {
                                     final Date after,
                                     final Meta meta);
 
-
     Region getRegion(final String codeValue);
 
     Region getRegionWithId(final String id);
@@ -146,7 +143,6 @@ public interface Domain {
                             final String prefLabel,
                             final Date after,
                             final Meta meta);
-
 
     StreetNumber getStreetNumberWithId(final String id);
 
@@ -181,7 +177,6 @@ public interface Domain {
                                            final Date after,
                                            final Meta meta);
 
-
     MagistrateServiceUnit getMagistrateServiceUnit(final String codeValue);
 
     MagistrateServiceUnit getMagistrateServiceUnitWithId(final String id);
@@ -200,7 +195,6 @@ public interface Domain {
                                                           final String prefLabel,
                                                           final Date after,
                                                           final Meta meta);
-
 
     ElectoralDistrict getElectoralDistrict(final String codeValue);
 
@@ -221,7 +215,6 @@ public interface Domain {
                                                   final Date after,
                                                   final Meta meta);
 
-
     HealthCareDistrict getHealthCareDistrict(final String codeValue);
 
     HealthCareDistrict getHealthCareDistrictWithId(final String id);
@@ -241,7 +234,6 @@ public interface Domain {
                                                     final Date after,
                                                     final Meta meta);
 
-
     BusinessServiceSubRegion getBusinessServiceSubRegion(final String codeValue);
 
     BusinessServiceSubRegion getBusinessServiceSubRegionWithId(final String id);
@@ -260,7 +252,6 @@ public interface Domain {
                                                                 final String prefLabel,
                                                                 final Date after,
                                                                 final Meta meta);
-
 
     BusinessId getBusinessId(final String codeValue);
 

@@ -65,8 +65,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
         final List<CodeRegistry> registryList = new ArrayList<>();
-        final Set<CodeRegistry> registrys = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
-        registryList.addAll(registrys);
+        final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
+        registryList.addAll(codeRegistries);
         meta.setResultCount(registryList.size());
         final ListResponseWrapper<CodeRegistry> wrapper = new ListResponseWrapper<>();
         wrapper.setResults(registryList);
@@ -76,6 +76,24 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}")
+    @ApiOperation(value = "Return one specific CodeRegistry.", response = CodeRegistry.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Returns one specific CodeRegistry in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeRegistry(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                    @ApiParam(value = "Value by id") @QueryParam("useId") @DefaultValue("false") final Boolean useId) {
+        LOG.info("/v1/coderegistries/ " + codeRegistryCodeValue + "/ requested!");
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
+        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue, useId);
+        if (codeRegistry != null) {
+            return Response.ok(codeRegistry).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes")
     @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
@@ -87,10 +105,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/ requested!");
+        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/ requested!");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue, false);
         if (codeRegistry != null) {
             final List<CodeScheme> codeSchemesList = new ArrayList<>();
             final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
@@ -108,7 +126,28 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/{codeSchemeCodeValue}")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}")
+    @ApiOperation(value = "Return one specific CodeScheme.", response = CodeScheme.class)
+    @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                  @ApiParam(value = "CodeScheme CodeValue.") @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                  @ApiParam(value = "Value by id") @QueryParam("useId") @DefaultValue("false") final Boolean useId) {
+        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/ requested!");
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue, false);
+        if (codeRegistry != null) {
+            final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue, useId);
+            return Response.ok(codeScheme).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes")
     @ApiOperation(value = "Return content listing of one register.", response = Region.class)
     @ApiResponse(code = 200, message = "Returns a register matching code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
@@ -120,10 +159,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                              @ApiParam(value = "Code PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                              @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/ requested!");
+        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/ requested!");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue, false);
         if (codeScheme != null) {
             final List<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
@@ -146,18 +185,18 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/{codeSchemeCodeValue}/{codeCodeValue}")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}")
     @ApiOperation(value = "Return one code from specific codescheme under specific coderegistry.", response = Region.class)
     @ApiResponse(code = 200, message = "Returns one registeritem from specific register in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCode(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                             @ApiParam(value = "CodeScheme CodeValue.") @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                             @ApiParam(value = "Code code.") @PathParam("codeCodeValue") final String codeCodeValue,
-                            @ApiParam(value = "After date filtering parameter, results will be regions with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/" + codeSchemeCodeValue + "/" + codeCodeValue + "/ requested!");
+                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                            @ApiParam(value = "Value by id") @QueryParam("useId") @DefaultValue("false") final Boolean useId) {
+        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/" + codeCodeValue + "/ requested!");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final Code code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        final Code code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, useId);
         if (code == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
