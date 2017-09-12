@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -94,12 +95,12 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
-                                               final Integer from,
-                                               final String codeRegistryCodeValue,
-                                               final String codeRegistryPrefLabel,
-                                               final Date after,
-                                               final Meta meta) {
-        final Set<CodeRegistry> codeRegistries = new HashSet<>();
+                                                     final Integer from,
+                                                     final String codeRegistryCodeValue,
+                                                     final String codeRegistryPrefLabel,
+                                                     final Date after,
+                                                     final Meta meta) {
+        final Set<CodeRegistry> codeRegistries = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -167,7 +168,7 @@ public class DomainImpl implements Domain {
                                           final String codeSchemeType,
                                           final Date after,
                                           final Meta meta) {
-        final Set<CodeScheme> codeSchemes = new HashSet<>();
+        final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -195,7 +196,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<String> getCodeSchemeTypes() {
-        final Set<String> types = new HashSet<>();
+        final Set<String> types = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
         if (exists) {
             final AggregationBuilder aggregation = AggregationBuilders.terms("typesAgg").field("_type").size(1000).minDocCount(0);
@@ -253,18 +254,18 @@ public class DomainImpl implements Domain {
         }
     }
 
-    public List<Code> getCodes(final Integer pageSize,
-                               final Integer from,
-                               final String codeRegistryCodeValue,
-                               final String codeSchemeCodeValue,
-                               final String codeCodeValue,
-                               final String prefLabel,
-                               final Date after,
-                               final Meta meta) {
+    public Set<Code> getCodes(final Integer pageSize,
+                              final Integer from,
+                              final String codeRegistryCodeValue,
+                              final String codeSchemeCodeValue,
+                              final String codeCodeValue,
+                              final String prefLabel,
+                              final Date after,
+                              final Meta meta) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
-            final List<Code> codes = new ArrayList<>();
+            final Set<Code> codes = new LinkedHashSet<>();
             final SearchRequestBuilder searchRequest = client
                     .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODE)

@@ -53,14 +53,14 @@ public interface Domain {
                  final String codeCodeValue,
                  final Boolean useId);
 
-    List<Code> getCodes(final Integer pageSize,
-                        final Integer from,
-                        final String codeRegistryCodeValue,
-                        final String codeSchemeCodeValue,
-                        final String codeCodeValue,
-                        final String prefLabel,
-                        final Date after,
-                        final Meta meta);
+    Set<Code> getCodes(final Integer pageSize,
+                       final Integer from,
+                       final String codeRegistryCodeValue,
+                       final String codeSchemeCodeValue,
+                       final String codeCodeValue,
+                       final String prefLabel,
+                       final Date after,
+                       final Meta meta);
 
     PostalCode getPostalCode(final String codeValue);
 
