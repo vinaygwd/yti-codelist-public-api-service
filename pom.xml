@@ -237,7 +237,6 @@
                 <version>${spotify-docker.version}</version>
                 <configuration>
                     <imageName>cls-public-api-service</imageName>
-                    <dockerDirectory>docker</dockerDirectory>
                     <useConfigFile>true</useConfigFile>
                     <pullOnBuild>false</pullOnBuild>
                     <resources>
