@@ -20,18 +20,6 @@ import java.util.List;
 
 abstract class AbstractBaseResource {
 
-    public static final String FILTER_NAME_STREETADDRESS = "streetAddress";
-    public static final String FILTER_NAME_STREETNUMBER = "streetNumber";
-    public static final String FILTER_NAME_MUNICIPALITY = "municipality";
-    public static final String FILTER_NAME_MAGISTRATE = "magistrate";
-    public static final String FILTER_NAME_ELECTORALDISTRICT = "electoralDistrict";
-    public static final String FILTER_NAME_POSTALCODE = "postalCode";
-    public static final String FILTER_NAME_POSTMANAGEMENTDISTRICT = "postManagementDistrict";
-    public static final String FILTER_NAME_REGION = "region";
-    public static final String FILTER_NAME_BUSINESSID = "businessId";
-    public static final String FILTER_NAME_BUSINESSSERVICESUBREGION = "businessServiceSubRegion";
-    public static final String FILTER_NAME_HEALTHCAREDISTRICT = "healthCareDistrict";
-    public static final String FILTER_NAME_MAGISTRATESERVICEUNIT = "magistrateServiceUnit";
     public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
     public static final String FILTER_NAME_CODESCHEME = "codeScheme";
     public static final String FILTER_NAME_CODE = "code";
@@ -62,18 +50,6 @@ abstract class AbstractBaseResource {
     public SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
                                                            final String expand) {
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-        filterProvider.addFilter(FILTER_NAME_MUNICIPALITY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_MAGISTRATE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_POSTALCODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_REGION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_STREETADDRESS, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_STREETNUMBER, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_MAGISTRATESERVICEUNIT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_BUSINESSID, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_HEALTHCAREDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_ELECTORALDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_BUSINESSSERVICESUBREGION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_POSTMANAGEMENTDISTRICT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));

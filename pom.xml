@@ -6,7 +6,7 @@
 
     <groupId>fi.vm.yti.cls</groupId>
     <artifactId>cls-public-api-service</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>cls-public-api-service</name>
     <description>Public API Service for CLS (Code List Service)</description>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>fi.vm.yti.cls</groupId>
             <artifactId>cls-common-model</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.3-SNAPSHOT</version>
         </dependency>
 
         <!-- Spring boot -->

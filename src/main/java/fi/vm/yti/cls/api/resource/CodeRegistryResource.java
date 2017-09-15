@@ -9,7 +9,6 @@ import fi.vm.yti.cls.common.model.Code;
 import fi.vm.yti.cls.common.model.CodeRegistry;
 import fi.vm.yti.cls.common.model.CodeScheme;
 import fi.vm.yti.cls.common.model.Meta;
-import fi.vm.yti.cls.common.model.Region;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,9 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
 /**
- * REST resources for registeritems.
+ * REST resources for registries, schemes and codes.
  */
 @Component
 @Path("/v1/coderegistries")
@@ -188,7 +186,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}")
-    @ApiOperation(value = "Return one code from specific codescheme under specific coderegistry.", response = Region.class)
+    @ApiOperation(value = "Return one code from specific codescheme under specific coderegistry.", response = Code.class)
     @ApiResponse(code = 200, message = "Returns one registeritem from specific register in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCode(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
