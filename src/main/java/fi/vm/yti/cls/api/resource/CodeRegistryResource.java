@@ -35,7 +35,7 @@ import java.util.Set;
  */
 @Component
 @Path("/v1/coderegistries")
-@Api(value = "coderegistries", description = "Operations about coderegistries, codeschemes and codes, .")
+@Api(value = "coderegistries", description = "Operations about coderegistries, codeschemes and codes.")
 @Produces("text/plain")
 public class CodeRegistryResource extends AbstractBaseResource {
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
@@ -98,9 +98,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                   @ApiParam(value = "CodeSchemeType name as string value.") @QueryParam("type") final String codeSchemeType,
-                                   @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
-                                   @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @ApiParam(value = "CodeRegistry PrefLabel as string value for searching.") @QueryParam("codeRegistryPrefLabel") final String codeRegistryPrefLabel,
+                                   @ApiParam(value = "CodeScheme codeValue as string value for searching.") @QueryParam("codeValue") final String codeSchemeCodeValue,
+                                   @ApiParam(value = "CodeScheme PrefLabel as string value for searching.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/ requested!");
@@ -109,7 +109,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue, false);
         if (codeRegistry != null) {
             final List<CodeScheme> codeSchemesList = new ArrayList<>();
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeSchemePrefLabel, codeSchemeType, meta.getAfter(), meta);
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, meta.getAfter(), meta);
             codeSchemesList.addAll(codeSchemes);
             meta.setResultCount(codeSchemesList.size());
             final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();

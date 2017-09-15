@@ -145,9 +145,9 @@ public class DomainImpl implements Domain {
     public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                           final Integer from,
                                           final String codeRegistryCodeValue,
+                                          final String codeRegistryPrefLabel,
                                           final String codeSchemeCodeValue,
                                           final String codeSchemePrefLabel,
-                                          final String codeSchemeType,
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
@@ -161,7 +161,12 @@ public class DomainImpl implements Domain {
                     .setSize(pageSize != null ? pageSize : MAX_SIZE)
                     .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
-            builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            if (codeRegistryCodeValue != null) {
+                builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
+            }
+            if (codeRegistryPrefLabel != null) {
+                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.se", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

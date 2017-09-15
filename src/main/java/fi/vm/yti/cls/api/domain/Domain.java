@@ -27,9 +27,9 @@ public interface Domain {
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,
                                    final String codeRegistryCodeValue,
+                                   final String codeRegistryPrefLabel,
                                    final String codeSchemeCodeValue,
                                    final String codeSchemeCodePrefLabel,
-                                   final String codeSchemeType,
                                    final Date after,
                                    final Meta meta);
 

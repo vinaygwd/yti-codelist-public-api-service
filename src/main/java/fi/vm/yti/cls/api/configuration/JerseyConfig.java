@@ -3,6 +3,7 @@ package fi.vm.yti.cls.api.configuration;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.resource.CodeRegistryResource;
+import fi.vm.yti.cls.api.resource.CodeSchemeResource;
 import fi.vm.yti.cls.api.resource.SwaggerResource;
 import fi.vm.yti.cls.api.resource.VersionResource;
 import io.swagger.annotations.Api;
@@ -54,6 +55,7 @@ public class JerseyConfig extends ResourceConfig {
 
         // API: Generic Register resources.
         register(CodeRegistryResource.class);
+        register(CodeSchemeResource.class);
     }
 
 }
