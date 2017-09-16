@@ -11,8 +11,7 @@ import java.util.Set;
 
 public interface Domain {
 
-    CodeRegistry getCodeRegistry(final String codeRegistryCodeValue,
-                                 final Boolean useId);
+    CodeRegistry getCodeRegistry(final String codeRegistryCodeValue);
 
     Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
                                         final Integer from,
@@ -22,8 +21,7 @@ public interface Domain {
                                         final Meta meta);
 
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
-                             final String codeSchemeCodeValue,
-                             final Boolean useId);
+                             final String codeSchemeCodeValue);
 
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,
@@ -37,8 +35,7 @@ public interface Domain {
 
     Code getCode(final String codeRegistryCodeValue,
                  final String codeSchemeCodeValue,
-                 final String codeCodeValue,
-                 final Boolean useId);
+                 final String codeCodeValue);
 
     Set<Code> getCodes(final Integer pageSize,
                        final Integer from,

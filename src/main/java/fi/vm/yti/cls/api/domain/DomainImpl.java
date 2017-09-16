@@ -45,8 +45,7 @@ public class DomainImpl implements Domain {
         this.client = client;
     }
 
-    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue,
-                                        final Boolean useId) {
+    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -54,12 +53,10 @@ public class DomainImpl implements Domain {
                     .prepareSearch(DomainConstants.ELASTIC_INDEX_CODEREGISTRIES)
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODEREGISTRY)
                     .addSort("codeValue.keyword", SortOrder.ASC);
-            final BoolQueryBuilder builder = boolQuery();
-            if (useId) {
-                builder.must(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()));
-            } else {
-                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
-            }
+            final BoolQueryBuilder builder = boolQuery()
+                    .should(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()))
+                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()))
+                    .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -110,8 +107,7 @@ public class DomainImpl implements Domain {
     }
 
     public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
-                                    final String codeSchemeCodeValue,
-                                    final Boolean useId) {
+                                    final String codeSchemeCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -119,12 +115,10 @@ public class DomainImpl implements Domain {
                     .prepareSearch(DomainConstants.ELASTIC_INDEX_CODESCHEMES)
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODESCHEME)
                     .addSort("codeValue.keyword", SortOrder.ASC);
-            final BoolQueryBuilder builder = boolQuery();
-            if (useId) {
-                builder.must(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()));
-            } else {
-                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
-            }
+            final BoolQueryBuilder builder = boolQuery()
+                    .should(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()))
+                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()))
+                    .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -189,21 +183,17 @@ public class DomainImpl implements Domain {
 
     public Code getCode(final String codeRegistryCodeValue,
                         final String codeSchemeCodeValue,
-                        final String codeCodeValue,
-                        final Boolean useId) {
+                        final String codeCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
                     .prepareSearch(DomainConstants.ELASTIC_INDEX_CODES)
                     .setTypes(DomainConstants.ELASTIC_TYPE_CODE);
-
-            final BoolQueryBuilder builder = boolQuery();
-            if (useId) {
-                builder.must(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()));
-            } else {
-                builder.must(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()));
-            }
+            final BoolQueryBuilder builder = boolQuery()
+                    .should(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()))
+                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()))
+                    .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
@@ -282,23 +272,9 @@ public class DomainImpl implements Domain {
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
             final String afterString = dateFormat.format(after);
-            builder.must(boolQuery()
-                    .should(QueryBuilders.rangeQuery("modified").gt(afterString))
-                    .minimumShouldMatch(1));
+            builder.must(QueryBuilders.rangeQuery("modified").gt(afterString));
         }
         return builder;
-    }
-
-    private void addDateFiltersToRequest(final SearchRequestBuilder searchRequest,
-                                         final Date after) {
-        if (after != null) {
-            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
-            final String afterString = dateFormat.format(after);
-            final QueryBuilder qb = boolQuery()
-                    .should(QueryBuilders.rangeQuery("modified").gt(afterString))
-                    .minimumShouldMatch(1);
-            searchRequest.setQuery(qb);
-        }
     }
 
     private void setResultCounts(final Meta meta,
