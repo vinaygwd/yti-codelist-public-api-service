@@ -6,6 +6,7 @@ import fi.vm.yti.cls.common.model.CodeScheme;
 import fi.vm.yti.cls.common.model.Meta;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 public interface Domain {
@@ -30,6 +31,7 @@ public interface Domain {
                                    final String codeRegistryPrefLabel,
                                    final String codeSchemeCodeValue,
                                    final String codeSchemeCodePrefLabel,
+                                   final List<String> statuses,
                                    final Date after,
                                    final Meta meta);
 
@@ -44,6 +46,7 @@ public interface Domain {
                        final String codeSchemeCodeValue,
                        final String codeCodeValue,
                        final String prefLabel,
+                       final List<String> statuses,
                        final Date after,
                        final Meta meta);
 

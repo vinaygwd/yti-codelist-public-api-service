@@ -9,6 +9,7 @@ import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 import fi.vm.yti.cls.api.api.ErrorWrapper;
 import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.cls.common.model.Status;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -16,7 +17,9 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 abstract class AbstractBaseResource {
 
@@ -67,13 +70,26 @@ abstract class AbstractBaseResource {
     }
 
     Response createErrorResponse(final int errorCode,
-                                         final String errorMessage) {
+                                 final String errorMessage) {
         final ErrorWrapper error = new ErrorWrapper();
         final Meta meta = new Meta();
         meta.setCode(errorCode);
         meta.setMessage(errorMessage);
         error.setMeta(meta);
         return Response.status(Response.Status.NOT_FOUND).entity(error).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    public List<String> parseStatus(final String statusCsl) {
+        final Set<String> statusSet = new HashSet<>();
+        if (statusCsl != null) {
+            for (final String s : Arrays.asList(statusCsl.split(","))) {
+                final Status status = Status.valueOf(s.trim());
+                if (status != null) {
+                    statusSet.add(status.toString());
+                }
+            }
+        }
+        return new ArrayList<String>(statusSet);
     }
 
 }

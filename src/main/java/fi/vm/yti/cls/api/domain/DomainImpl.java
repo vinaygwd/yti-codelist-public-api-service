@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.toIntExact;
@@ -148,6 +149,7 @@ public class DomainImpl implements Domain {
                                           final String codeRegistryPrefLabel,
                                           final String codeSchemeCodeValue,
                                           final String codeSchemePrefLabel,
+                                          final List<String> statuses,
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
@@ -166,6 +168,9 @@ public class DomainImpl implements Domain {
             }
             if (codeRegistryPrefLabel != null) {
                 builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.se", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            }
+            if (!statuses.isEmpty()) {
+                builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -228,6 +233,7 @@ public class DomainImpl implements Domain {
                               final String codeSchemeCodeValue,
                               final String codeCodeValue,
                               final String prefLabel,
+                              final List<String> statuses,
                               final Date after,
                               final Meta meta) {
         final boolean exists = client.admin().indices().prepareExists(DomainConstants.ELASTIC_INDEX_CODES).execute().actionGet().isExists();
@@ -245,7 +251,9 @@ public class DomainImpl implements Domain {
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
-
+            if (!statuses.isEmpty()) {
+                builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
+            }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
             Arrays.stream(response.getHits().hits()).forEach(hit -> {

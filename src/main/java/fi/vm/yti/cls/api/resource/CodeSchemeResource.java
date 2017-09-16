@@ -1,11 +1,9 @@
 package fi.vm.yti.cls.api.resource;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
-import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.api.ApiUtils;
 import fi.vm.yti.cls.api.api.ListResponseWrapper;
 import fi.vm.yti.cls.api.domain.Domain;
-import fi.vm.yti.cls.common.model.Code;
 import fi.vm.yti.cls.common.model.CodeRegistry;
 import fi.vm.yti.cls.common.model.CodeScheme;
 import fi.vm.yti.cls.common.model.Meta;
@@ -21,7 +19,6 @@ import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -49,7 +46,6 @@ public class CodeSchemeResource extends AbstractBaseResource {
         this.domain = domain;
     }
 
-
     @GET
     @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
@@ -60,13 +56,15 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                    @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         LOG.info("/v1/codeschemes/ requested!");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final List<String> statusList = parseStatus(status);
         final List<CodeScheme> codeSchemesList = new ArrayList<>();
-        final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, meta.getAfter(), meta);
+        final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
         codeSchemesList.addAll(codeSchemes);
         meta.setResultCount(codeSchemesList.size());
         final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();

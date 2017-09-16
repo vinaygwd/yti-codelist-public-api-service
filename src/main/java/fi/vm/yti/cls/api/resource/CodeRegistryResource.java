@@ -27,6 +27,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -101,15 +102,17 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeRegistry PrefLabel as string value for searching.") @QueryParam("codeRegistryPrefLabel") final String codeRegistryPrefLabel,
                                    @ApiParam(value = "CodeScheme codeValue as string value for searching.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value for searching.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/ requested!");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue, false);
+        final List<String> statusList = parseStatus(status);
         if (codeRegistry != null) {
             final List<CodeScheme> codeSchemesList = new ArrayList<>();
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, meta.getAfter(), meta);
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
             codeSchemesList.addAll(codeSchemes);
             meta.setResultCount(codeSchemesList.size());
             final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
@@ -155,14 +158,16 @@ public class CodeRegistryResource extends AbstractBaseResource {
                              @ApiParam(value = "CodeScheme CodeValue.") @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                              @ApiParam(value = "Code code.") @QueryParam("codeValue") final String codeCodeValue,
                              @ApiParam(value = "Code PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                             @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/ requested!");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+        final List<String> statusList = parseStatus(status);
         final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue, false);
         if (codeScheme != null) {
-            final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, meta.getAfter(), meta);
+            final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                 meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
             }
