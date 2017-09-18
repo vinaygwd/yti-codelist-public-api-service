@@ -2,7 +2,7 @@
 FROM cls-docker-java-base:alpine
 
 # Deploy project
-ADD cls-public-api-service.jar ${deploy_dir}/cls-public-api-service.jar
+ADD target/cls-public-api-service.jar ${deploy_dir}/cls-public-api-service.jar
 
 # If you want to serve static content (e.g. /cls-public-api-service/swagger/index.html)
 # from spring boot application that is running inside docker container you shall run into
