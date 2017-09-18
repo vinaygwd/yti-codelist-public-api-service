@@ -1,18 +1,23 @@
 package fi.vm.yti.cls.api.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import fi.vm.yti.cls.common.model.Code;
-import fi.vm.yti.cls.common.model.CodeRegistry;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Meta;
+import static java.lang.Math.toIntExact;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Singleton;
+
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
@@ -21,16 +26,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
-import static java.lang.Math.toIntExact;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import fi.vm.yti.cls.common.model.Code;
+import fi.vm.yti.cls.common.model.CodeRegistry;
+import fi.vm.yti.cls.common.model.CodeScheme;
+import fi.vm.yti.cls.common.model.Meta;
 
 @Singleton
 @Service
