@@ -1,13 +1,14 @@
 package fi.vm.yti.cls.api.api;
 
-import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
 
 @Component
 public class ApiUtils {

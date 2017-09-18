@@ -1,10 +1,11 @@
 package fi.vm.yti.cls.api.api;
 
-import fi.vm.yti.cls.common.model.Meta;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
+
+import fi.vm.yti.cls.common.model.Meta;
 
 @XmlRootElement
 @XmlType(propOrder = { "meta", "results" })

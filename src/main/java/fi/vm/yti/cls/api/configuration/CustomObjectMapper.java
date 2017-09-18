@@ -1,8 +1,9 @@
 package fi.vm.yti.cls.api.configuration;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.springframework.stereotype.Component;
 
 @Component
 public class CustomObjectMapper extends ObjectMapper {

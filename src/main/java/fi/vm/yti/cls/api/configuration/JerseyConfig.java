@@ -1,6 +1,12 @@
 package fi.vm.yti.cls.api.configuration;
 
+import javax.ws.rs.ApplicationPath;
+
+import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
 import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.resource.CodeRegistryResource;
 import fi.vm.yti.cls.api.resource.CodeSchemeResource;
@@ -11,10 +17,6 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.springframework.stereotype.Component;
-
-import javax.ws.rs.ApplicationPath;
 
 @Component
 @SwaggerDefinition(

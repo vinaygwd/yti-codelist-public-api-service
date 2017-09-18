@@ -1,5 +1,8 @@
 package fi.vm.yti.cls.api.configuration;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -14,9 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 @Configuration
 @PropertySource(value = "classpath", ignoreResourceNotFound = true)
