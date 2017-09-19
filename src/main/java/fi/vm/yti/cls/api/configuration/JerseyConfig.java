@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.resource.CodeRegistryResource;
 import fi.vm.yti.cls.api.resource.CodeSchemeResource;
 import fi.vm.yti.cls.api.resource.SwaggerResource;
 import fi.vm.yti.cls.api.resource.VersionResource;
+import fi.vm.yti.cls.common.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
@@ -35,7 +35,7 @@ import io.swagger.annotations.SwaggerDefinition;
         )
     ),
     host = "localhost:9600",
-    basePath = ApiConstants.API_CONTEXT_PATH + ApiConstants.API_BASE_PATH,
+    basePath = ApiConstants.API_CONTEXT_PATH_RESTAPI + ApiConstants.API_BASE_PATH,
     consumes = {"application/json", "application/xml"},
     produces = {"application/json", "application/xml"},
     schemes = {SwaggerDefinition.Scheme.HTTPS}

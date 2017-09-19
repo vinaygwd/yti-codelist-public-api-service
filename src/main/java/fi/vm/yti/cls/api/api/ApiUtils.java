@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
+import fi.vm.yti.cls.common.constants.ApiConstants;
 
 @Component
 public class ApiUtils {

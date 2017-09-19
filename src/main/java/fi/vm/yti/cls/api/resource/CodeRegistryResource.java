@@ -20,10 +20,10 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
-import fi.vm.yti.cls.api.api.ApiConstants;
 import fi.vm.yti.cls.api.api.ApiUtils;
 import fi.vm.yti.cls.api.api.ListResponseWrapper;
 import fi.vm.yti.cls.api.domain.Domain;
+import fi.vm.yti.cls.common.constants.ApiConstants;
 import fi.vm.yti.cls.common.model.Code;
 import fi.vm.yti.cls.common.model.CodeRegistry;
 import fi.vm.yti.cls.common.model.CodeScheme;
