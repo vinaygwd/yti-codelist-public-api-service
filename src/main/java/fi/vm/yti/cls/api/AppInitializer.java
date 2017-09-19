@@ -91,11 +91,6 @@ public class AppInitializer {
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(new InputStreamReader(inputStream, "UTF-8"));
             final String hostname = apiUtils.getPublicApiServiceHostname();
             jsonObject.put("host", hostname);
-            // TODO: Remove this hack once Swagger UI cyclic dependency / Maximum call stack size exceeded issue gets fixed: https://github.com/astaxie/beego/issues/2694
-            final ObjectNode definitions = (ObjectNode) jsonObject.get("definitions");
-            final JsonNode streetNumber = definitions.get("StreetNumber");
-            final ObjectNode streetNumberProperties = (ObjectNode) streetNumber.get("properties");
-            streetNumberProperties.remove("streetAddress");
             final String scheme = publicApiServiceProperties.getScheme();
             final List<String> schemes = new ArrayList<>();
             schemes.add(scheme);
