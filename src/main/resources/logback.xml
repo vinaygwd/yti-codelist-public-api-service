@@ -2,7 +2,7 @@
 <configuration>
 
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <property name="LOG_PATH" value="/data/logs"/>
+    <property name="LOG_PATH" value="${user.home}/CodeListService/logs"/>
     <property name="SERVICE_NAME" value="cls-public-api-service"/>
 
     <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
