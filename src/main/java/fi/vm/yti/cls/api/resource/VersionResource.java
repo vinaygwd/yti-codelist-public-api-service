@@ -12,6 +12,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import static fi.vm.yti.cls.common.constants.ApiConstants.API_VERSION;
+
 @Component
 @Path("/version")
 @Api(value = "version", description = "Returns version information of the running application.")
@@ -29,7 +31,7 @@ public class VersionResource {
     @ApiOperation(value = "Get version information", response = String.class)
     @ApiResponse(code = 200, message = "Returns the version of the running Public API Service application.")
     public String getVersionInformation() {
-        LOG.info("/version called");
+        LOG.info(API_VERSION + " called");
         return "\n" +
                "       .__                                 ___.   .__  .__        \n" +
                "  ____ |  |   ______           ______  __ _\\_ |__ |  | |__| ____  \n" +
