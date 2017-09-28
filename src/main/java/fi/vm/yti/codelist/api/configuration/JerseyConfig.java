@@ -34,7 +34,7 @@ import io.swagger.annotations.SwaggerDefinition;
                 url = "https://opensource.org/licenses/EUPL-1.1"
         )
     ),
-    host = "localhost:9600",
+    host = "localhost:9601",
     basePath = ApiConstants.API_CONTEXT_PATH_RESTAPI + ApiConstants.API_BASE_PATH,
     consumes = {"application/json", "application/xml"},
     produces = {"application/json", "application/xml"},
