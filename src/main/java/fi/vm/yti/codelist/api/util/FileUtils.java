@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.util;
+package fi.vm.yti.codelist.api.util;
 
 import org.springframework.core.io.ClassPathResource;
 

@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.configuration;
+package fi.vm.yti.codelist.api.configuration;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-import fi.vm.yti.cls.api.resource.CodeRegistryResource;
-import fi.vm.yti.cls.api.resource.CodeSchemeResource;
-import fi.vm.yti.cls.api.resource.SwaggerResource;
-import fi.vm.yti.cls.api.resource.VersionResource;
-import fi.vm.yti.cls.common.constants.ApiConstants;
+import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
+import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
+import fi.vm.yti.codelist.api.resource.SwaggerResource;
+import fi.vm.yti.codelist.api.resource.VersionResource;
+import fi.vm.yti.codelist.common.constants.ApiConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;

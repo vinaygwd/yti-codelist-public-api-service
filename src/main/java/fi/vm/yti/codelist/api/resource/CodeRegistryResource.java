@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.resource;
+package fi.vm.yti.codelist.api.resource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +20,14 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
-import fi.vm.yti.cls.api.api.ApiUtils;
-import fi.vm.yti.cls.api.api.ListResponseWrapper;
-import fi.vm.yti.cls.api.domain.Domain;
-import fi.vm.yti.cls.common.constants.ApiConstants;
-import fi.vm.yti.cls.common.model.Code;
-import fi.vm.yti.cls.common.model.CodeRegistry;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.codelist.api.api.ApiUtils;
+import fi.vm.yti.codelist.api.api.ListResponseWrapper;
+import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.common.constants.ApiConstants;
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

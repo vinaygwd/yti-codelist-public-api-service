@@ -1,6 +1,7 @@
-package fi.vm.yti.cls.api.resource;
+package fi.vm.yti.codelist.api.resource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fi.vm.yti.codelist.api.AppInitializer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -16,8 +17,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 
-import static fi.vm.yti.cls.api.AppInitializer.LOCAL_SWAGGER_DATA_DIR;
-
 @Component
 @Path("/swagger.json")
 @Api(value = "swagger.json", description = "Operation that outputs environment specific dynamic swagger.json.")
@@ -31,7 +30,7 @@ public class SwaggerResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public String getSwaggerJson() throws IOException {
         LOG.info("/swagger.json called.");
-        final File file = new File(LOCAL_SWAGGER_DATA_DIR + "swagger.json");
+        final File file = new File(AppInitializer.LOCAL_SWAGGER_DATA_DIR + "swagger.json");
         final String swaggerJson = FileUtils.readFileToString(file, "UTF-8");
         return swaggerJson;
     }

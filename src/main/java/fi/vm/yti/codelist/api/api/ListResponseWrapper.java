@@ -1,21 +1,22 @@
-package fi.vm.yti.cls.api.api;
+package fi.vm.yti.codelist.api.api;
 
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.codelist.common.model.Meta;
 
 @XmlRootElement
-@XmlType(propOrder = { "meta", "results" })
+@XmlType(propOrder = {"meta", "results"})
 public class ListResponseWrapper<T> {
 
     private Meta meta;
 
     private List<T> results;
 
-    public ListResponseWrapper() { }
+    public ListResponseWrapper() {
+    }
 
     public Meta getMeta() {
         return meta;

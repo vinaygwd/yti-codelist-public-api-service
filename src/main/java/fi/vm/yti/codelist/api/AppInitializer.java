@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api;
+package fi.vm.yti.codelist.api;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fi.vm.yti.cls.api.api.ApiUtils;
-import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
-import fi.vm.yti.cls.api.configuration.VersionInformation;
-import fi.vm.yti.cls.api.util.FileUtils;
+import fi.vm.yti.codelist.api.api.ApiUtils;
+import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
+import fi.vm.yti.codelist.api.configuration.VersionInformation;
+import fi.vm.yti.codelist.api.util.FileUtils;
 
 @Component
 public class AppInitializer {

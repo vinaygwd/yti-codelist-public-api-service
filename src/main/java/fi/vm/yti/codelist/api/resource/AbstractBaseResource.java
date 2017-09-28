@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.resource;
+package fi.vm.yti.codelist.api.resource;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
-import fi.vm.yti.cls.api.api.ErrorWrapper;
-import fi.vm.yti.cls.common.model.Meta;
-import fi.vm.yti.cls.common.model.Status;
+import fi.vm.yti.codelist.api.api.ErrorWrapper;
+import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.model.Status;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;

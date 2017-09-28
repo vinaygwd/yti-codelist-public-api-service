@@ -13,13 +13,13 @@ This is the implementation of the Public API Service microservice for the Code L
 ### Example queries:
 
 Do a HTTP GET to public resource:
-`http://localhost:9600/cls-api/api/v1/hello`
+`http://localhost:9601/api/v1/hello`
 
 ## Interface Documentation
 
 When the microservice is running, you can get the Swagger REST API documentation from:
-- [http://localhost:9600/cls-api/api/swagger.json](http://localhost:9600/cls-api/api/swagger.json)
-- [http://localhost:9600/cls-api/swagger/index.html](http://localhost:9600/cls-api/swagger/index.html)
+- [http://localhost:9601/api/swagger.json](http://localhost:9601/api/swagger.json)
+- [http://localhost:9601/swagger/index.html](http://localhost:9601/swagger/index.html)
 
 ## Prerequisities
 
@@ -30,7 +30,7 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 ## Running
 
-- [cls-config](https://github.com/vrk-yti/cls-config) - Default configuration for development use
+- [yti-codelist-config](https://github.com/vrk-yti/yti-codelist-config) - Default configuration for development use
 
 ## Starting service on local development environment
 
@@ -38,13 +38,13 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 Add the following Run configurations options:
 
-- Program arguments: `--spring.profiles.active=default --spring.config.location=../cls-config/application.yml,../cls-config/cls-public-api-service.yml`
+- Program arguments: `--spring.profiles.active=default --spring.config.location=../yti-codelist-config/application.yml,../yti-codelist-config/yti-codelist-public-api-service.yml`
 - Workdir: `$MODULE_DIR$`
 
-Add folder for cls-project, application writes modified files there:
+Add folder for yti project, application writes modified files there:
 
 ```bash
-$ mkdir /data/cls
+$ mkdir /data/yti
 ```
 
 
@@ -57,13 +57,13 @@ $ mvn clean package docker:build
 ### Running the Docker Image
 
 ```bash
-$ docker run --rm -p 9600:9600 -p 19600:19600 -v /path/to/cls-config:/config --name=cls-public-api-service cls-public-api-service -a --spring.config.location=/config/application.yml,/config/cls-public-api-service.ym
+$ docker run --rm -p 9601:9601 -p 19601:19601 -v /path/to/yti-codelist-config:/config --name=yti-codelist-public-api-service yti-codelist-public-api-service -a --spring.config.location=/config/application.yml,/config/yti-codelist-public-api-service.yml
 ```
 
-.. or in [cls-compose](https://github.com/vrk-yti/cls-compose/) run
+.. or in [yti-codelist-compose](https://github.com/vrk-yti/yti-codelist-compose/) run
 
 ```bash
-$ docker-compose up cls-public-api-service
+$ docker-compose up yti-codelist-public-api-service
 ```
 
 [Spring boot]:http://projects.spring.io/spring-boot/

@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.api;
+package fi.vm.yti.codelist.api.api;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -8,8 +8,8 @@ import java.util.TimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fi.vm.yti.cls.api.configuration.PublicApiServiceProperties;
-import fi.vm.yti.cls.common.constants.ApiConstants;
+import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
+import fi.vm.yti.codelist.common.constants.ApiConstants;
 
 @Component
 public class ApiUtils {

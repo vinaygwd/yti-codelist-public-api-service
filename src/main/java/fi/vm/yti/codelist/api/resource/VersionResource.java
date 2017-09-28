@@ -1,6 +1,6 @@
-package fi.vm.yti.cls.api.resource;
+package fi.vm.yti.codelist.api.resource;
 
-import fi.vm.yti.cls.api.configuration.VersionInformation;
+import fi.vm.yti.codelist.api.configuration.VersionInformation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -12,7 +12,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import static fi.vm.yti.cls.common.constants.ApiConstants.API_VERSION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_VERSION;
 
 @Component
 @Path("/version")

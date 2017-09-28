@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.resource;
+package fi.vm.yti.codelist.api.resource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +19,11 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
-import fi.vm.yti.cls.api.api.ListResponseWrapper;
-import fi.vm.yti.cls.api.domain.Domain;
-import fi.vm.yti.cls.common.model.CodeRegistry;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.codelist.api.api.ListResponseWrapper;
+import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -37,6 +37,7 @@ import io.swagger.annotations.ApiResponse;
 @Api(value = "codeschemes", description = "Operations about codeschemes.")
 @Produces("text/plain")
 public class CodeSchemeResource extends AbstractBaseResource {
+
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
     private final Domain domain;
 

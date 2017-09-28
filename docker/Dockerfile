@@ -1,8 +1,8 @@
 # Pull base image
-FROM cls-docker-java-base:alpine
+FROM yti-codelist-docker-java-base:alpine
 
 # Deploy project
-ADD target/cls-public-api-service.jar ${deploy_dir}/cls-public-api-service.jar
+ADD target/yti-codelist-public-api-service.jar ${deploy_dir}/yti-codelist-public-api-service.jar
 
 # If you want to serve static content (e.g. /cls-public-api-service/swagger/index.html)
 # from spring boot application that is running inside docker container you shall run into
@@ -15,10 +15,10 @@ ADD target/cls-public-api-service.jar ${deploy_dir}/cls-public-api-service.jar
 # Workaround is described here: https://spring.io/guides/gs/spring-boot-docker/
 #
 # Enable following command to solve problem:
-RUN bash -c 'touch ${deploy_dir}/cls-public-api-service.jar'
+RUN bash -c 'touch ${deploy_dir}/yti-codelist-public-api-service.jar'
 
 # Expose port
-EXPOSE 9600
+EXPOSE 9601
 
 # Set default command on run
-ENTRYPOINT ["/bootstrap.sh", "cls-public-api-service.jar"]
+ENTRYPOINT ["/bootstrap.sh", "yti-codelist-public-api-service.jar"]

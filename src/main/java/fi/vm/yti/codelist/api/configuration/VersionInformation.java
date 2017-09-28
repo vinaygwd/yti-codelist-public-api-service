@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.configuration;
+package fi.vm.yti.codelist.api.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;

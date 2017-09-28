@@ -1,11 +1,11 @@
-package fi.vm.yti.cls.api.domain;
+package fi.vm.yti.codelist.api.domain;
 
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRIES;
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_INDEX_CODES;
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEMES;
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
-import static fi.vm.yti.cls.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRIES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEMES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 
@@ -35,10 +35,10 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
-import fi.vm.yti.cls.common.model.Code;
-import fi.vm.yti.cls.common.model.CodeRegistry;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.Meta;
 
 @Singleton
 @Service

@@ -1,9 +1,9 @@
-package fi.vm.yti.cls.api.domain;
+package fi.vm.yti.codelist.api.domain;
 
-import fi.vm.yti.cls.common.model.Code;
-import fi.vm.yti.cls.common.model.CodeRegistry;
-import fi.vm.yti.cls.common.model.CodeScheme;
-import fi.vm.yti.cls.common.model.Meta;
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.Meta;
 
 import java.util.Date;
 import java.util.List;

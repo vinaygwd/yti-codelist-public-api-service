@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api;
+package fi.vm.yti.codelist.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
-@ComponentScan("fi.vm.yti.cls.api")
+@ComponentScan("fi.vm.yti.codelist.api")
 public class PublicApiServiceApplication {
 
     public PublicApiServiceApplication() { }

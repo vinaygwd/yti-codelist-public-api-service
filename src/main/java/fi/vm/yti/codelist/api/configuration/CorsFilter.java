@@ -1,4 +1,4 @@
-package fi.vm.yti.cls.api.configuration;
+package fi.vm.yti.codelist.api.configuration;
 
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
