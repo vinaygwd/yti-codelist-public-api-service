@@ -1,10 +1,10 @@
-# CLS (Code List Service) - Public API Service microservice
+# YTI CodeList - Public API Service microservice
 
 This application is part of the [Joint metadata and information management programme](https://wiki.julkict.fi/julkict/yti).
 
 ## Description
 
-This is the implementation of the Public API Service microservice for the Code List Service (CLS) with:
+This is the implementation of the Public API Service microservice for the YTI CodeList with:
 
 * [Spring boot] For getting things up and running
 * Embedded [Jetty] to serve
