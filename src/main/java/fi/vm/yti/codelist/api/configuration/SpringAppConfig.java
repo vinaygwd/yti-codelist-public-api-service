@@ -22,13 +22,13 @@ import org.springframework.http.HttpStatus;
 @PropertySource(value = "classpath", ignoreResourceNotFound = true)
 public class SpringAppConfig {
 
-    @Value("${cls_public_api_service_elastic_host}")
+    @Value("${yti_codelist_public_api_service_elastic_host}")
     protected String elasticsearchHost;
 
-    @Value("${cls_public_api_service_elastic_port}")
+    @Value("${yti_codelist_public_api_service_elastic_port}")
     protected Integer elasticsearchPort;
 
-    @Value("${cls_public_api_service_elastic_cluster}")
+    @Value("${yti_codelist_public_api_service_elastic_cluster}")
     protected String clusterName;
 
     @Value(value = "${application.contextPath}")

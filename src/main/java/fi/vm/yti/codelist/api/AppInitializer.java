@@ -32,7 +32,7 @@ import fi.vm.yti.codelist.api.util.FileUtils;
 public class AppInitializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
-    public static final String LOCAL_SWAGGER_DATA_DIR = "/data/cls/cls-api/swagger/";
+    public static final String LOCAL_SWAGGER_DATA_DIR = "/data/yti/yti-codelist-api/swagger/";
     private final ApiUtils apiUtils;
     private final PublicApiServiceProperties publicApiServiceProperties;
     private final VersionInformation versionInformation;
