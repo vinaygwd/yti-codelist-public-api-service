@@ -287,5 +287,4 @@ public class DomainImpl implements Domain {
         meta.setResultCount(resultCount);
         LOG.info("Search found: " + totalResults + " total hits.");
     }
-
 }
