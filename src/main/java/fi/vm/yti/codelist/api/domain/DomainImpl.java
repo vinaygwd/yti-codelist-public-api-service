@@ -1,14 +1,5 @@
 package fi.vm.yti.codelist.api.domain;
 
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRIES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEMES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
-import static java.lang.Math.toIntExact;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -39,14 +30,17 @@ import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Meta;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static java.lang.Math.toIntExact;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 
 @Singleton
 @Service
 public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private Client client;
     private static int MAX_SIZE = 10000;
+    private Client client;
 
     @Autowired
     private DomainImpl(final Client client) {
@@ -54,17 +48,17 @@ public class DomainImpl implements Domain {
     }
 
     public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODEREGISTRIES)
-                    .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                    .addSort("codeValue.keyword", SortOrder.ASC);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODEREGISTRY)
+                .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                    .should(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()))
-                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()))
-                    .minimumShouldMatch(1);
+                .should(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("codeValue.keyword", codeRegistryCodeValue.toLowerCase()))
+                .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -83,21 +77,21 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
-                                                     final Integer from,
-                                                     final String codeRegistryCodeValue,
-                                                     final String codeRegistryPrefLabel,
-                                                     final Date after,
-                                                     final Meta meta) {
+                                               final Integer from,
+                                               final String codeRegistryCodeValue,
+                                               final String codeRegistryPrefLabel,
+                                               final Date after,
+                                               final Meta meta) {
         final Set<CodeRegistry> codeRegistries = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRIES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODEREGISTRIES)
-                    .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                    .addSort("codeValue.keyword", SortOrder.ASC)
-                    .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                    .setFrom(from != null ? from : 0);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODEREGISTRY)
+                .addSort("codeValue.keyword", SortOrder.ASC)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel, after);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -116,17 +110,17 @@ public class DomainImpl implements Domain {
 
     public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                                     final String codeSchemeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODESCHEMES)
-                    .setTypes(ELASTIC_TYPE_CODESCHEME)
-                    .addSort("codeValue.keyword", SortOrder.ASC);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                    .should(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()))
-                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()))
-                    .minimumShouldMatch(1);
+                .should(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("codeValue.keyword", codeSchemeCodeValue.toLowerCase()))
+                .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -155,15 +149,15 @@ public class DomainImpl implements Domain {
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEMES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODESCHEMES)
-                    .setTypes(ELASTIC_TYPE_CODESCHEME)
-                    .addSort("codeValue.keyword", SortOrder.ASC)
-                    .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                    .setFrom(from != null ? from : 0);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .addSort("codeValue.keyword", SortOrder.ASC)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
             if (codeRegistryCodeValue != null) {
                 builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
@@ -192,16 +186,16 @@ public class DomainImpl implements Domain {
     public Code getCode(final String codeRegistryCodeValue,
                         final String codeSchemeCodeValue,
                         final String codeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODES)
-                    .setTypes(ELASTIC_TYPE_CODE);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
-                    .should(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()))
-                    .should(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()))
-                    .minimumShouldMatch(1);
+                .should(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("codeValue.keyword", codeCodeValue.toLowerCase()))
+                .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue.keyword", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
@@ -234,16 +228,16 @@ public class DomainImpl implements Domain {
                               final List<String> statuses,
                               final Date after,
                               final Meta meta) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODES).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final Set<Code> codes = new LinkedHashSet<>();
             final SearchRequestBuilder searchRequest = client
-                    .prepareSearch(ELASTIC_INDEX_CODES)
-                    .setTypes(ELASTIC_TYPE_CODE)
-                    .addSort("codeValue.keyword", SortOrder.ASC)
-                    .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                    .setFrom(from != null ? from : 0);
+                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .setTypes(ELASTIC_TYPE_CODE)
+                .addSort("codeValue.keyword", SortOrder.ASC)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue.keyword", codeSchemeCodeValue.toLowerCase()));

@@ -32,6 +32,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
  * REST resources for registries, schemes and codes.
@@ -62,7 +63,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
         final List<CodeRegistry> registryList = new ArrayList<>();
@@ -82,7 +83,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistry(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/ " + codeRegistryCodeValue + "/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -106,7 +107,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
@@ -135,7 +136,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.") @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                   @ApiParam(value = "CodeScheme CodeValue.") @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -161,7 +162,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                              @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final List<String> statusList = parseStatus(status);
@@ -198,7 +199,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                             @ApiParam(value = "CodeScheme CodeValue.") @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                             @ApiParam(value = "Code code.") @PathParam("codeCodeValue") final String codeCodeValue,
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/coderegistries/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/" + codeCodeValue + "/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/" + codeCodeValue);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final Code code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code == null) {
@@ -206,5 +207,4 @@ public class CodeRegistryResource extends AbstractBaseResource {
         }
         return Response.ok(code).build();
     }
-
 }

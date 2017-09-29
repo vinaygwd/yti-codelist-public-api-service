@@ -28,9 +28,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
- * REST resources for registries, schemes and codes.
+ * REST resources for listing codeschemes.
  */
 @Component
 @Path("/v1/codeschemes")
@@ -59,7 +60,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        LOG.info("/v1/codeschemes/ requested!");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/");
         final Meta meta = new Meta(200, null, null, after);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final List<String> statusList = parseStatus(status);
@@ -72,5 +73,4 @@ public class CodeSchemeResource extends AbstractBaseResource {
         wrapper.setMeta(meta);
         return Response.ok(wrapper).build();
     }
-
 }

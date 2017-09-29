@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 abstract class AbstractBaseResource {
 
     public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
@@ -92,4 +94,10 @@ abstract class AbstractBaseResource {
         return new ArrayList<String>(statusSet);
     }
 
+    public void logApiRequest(final Logger logger,
+                              final String method,
+                              final String apiVersionPath,
+                              final String apiPath) {
+        logger.info(method + " " + apiVersionPath + apiPath + " requested!");
+    }
 }
