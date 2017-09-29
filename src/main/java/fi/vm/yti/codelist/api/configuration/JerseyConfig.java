@@ -9,6 +9,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
+import fi.vm.yti.codelist.api.resource.PingResource;
 import fi.vm.yti.codelist.api.resource.SwaggerResource;
 import fi.vm.yti.codelist.api.resource.VersionResource;
 import fi.vm.yti.codelist.common.constants.ApiConstants;
@@ -51,6 +52,9 @@ public class JerseyConfig extends ResourceConfig {
         // CORS filtering.
         register(CorsFilter.class);
 
+        // Health.
+        register(PingResource.class);
+
         // Generic resources.
         register(VersionResource.class);
         register(SwaggerResource.class);
@@ -59,5 +63,4 @@ public class JerseyConfig extends ResourceConfig {
         register(CodeRegistryResource.class);
         register(CodeSchemeResource.class);
     }
-
 }
