@@ -1,6 +1,6 @@
 package fi.vm.yti.codelist.api.api;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -9,13 +9,13 @@ import fi.vm.yti.codelist.common.model.Meta;
 
 @XmlRootElement
 @XmlType(propOrder = {"meta", "results"})
-public class ListResponseWrapper<T> {
+public class ResponseWrapper<T> {
 
     private Meta meta;
 
-    private List<T> results;
+    private Set<T> results;
 
-    public ListResponseWrapper() {
+    public ResponseWrapper() {
     }
 
     public Meta getMeta() {
@@ -26,11 +26,11 @@ public class ListResponseWrapper<T> {
         this.meta = meta;
     }
 
-    public List<T> getResults() {
+    public Set<T> getResults() {
         return results;
     }
 
-    public void setResults(final List<T> results) {
+    public void setResults(final Set<T> results) {
         this.results = results;
     }
 

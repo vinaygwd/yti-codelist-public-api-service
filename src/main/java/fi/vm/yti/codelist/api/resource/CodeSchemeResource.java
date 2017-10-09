@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
-import fi.vm.yti.codelist.api.api.ListResponseWrapper;
+import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
@@ -50,7 +49,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
     public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                    @ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryPrefLabel,
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
@@ -58,19 +57,23 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
+                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/");
-        final Meta meta = new Meta(200, null, null, after);
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final List<String> statusList = parseStatus(status);
-        final List<CodeScheme> codeSchemesList = new ArrayList<>();
-        final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
-        codeSchemesList.addAll(codeSchemes);
-        meta.setResultCount(codeSchemesList.size());
-        final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
-        wrapper.setResults(codeSchemesList);
-        wrapper.setMeta(meta);
-        return Response.ok(wrapper).build();
+        if (FORMAT_CSV.equalsIgnoreCase(format)) {
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
+            return Response.ok(constructCodeSchemesCsv(codeSchemes)).build();
+        } else {
+            final Meta meta = new Meta(200, null, null, after);
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
+            meta.setResultCount(codeSchemes.size());
+            final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(codeSchemes);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        }
     }
 }

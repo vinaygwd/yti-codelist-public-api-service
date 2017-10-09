@@ -1,7 +1,6 @@
 package fi.vm.yti.codelist.api.domain;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -96,7 +95,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
-            Arrays.stream(response.getHits().hits()).forEach(hit -> {
+            response.getHits().forEach(hit -> {
                 try {
                     final CodeRegistry codeRegistry = mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
                     codeRegistries.add(codeRegistry);
@@ -171,7 +170,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
-            Arrays.stream(response.getHits().hits()).forEach(hit -> {
+            response.getHits().forEach(hit -> {
                 try {
                     final CodeScheme codeScheme = mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
                     codeSchemes.add(codeScheme);
@@ -248,7 +247,7 @@ public class DomainImpl implements Domain {
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
-            Arrays.stream(response.getHits().hits()).forEach(hit -> {
+            response.getHits().forEach(hit -> {
                 try {
                     final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
                     codes.add(code);
@@ -282,9 +281,11 @@ public class DomainImpl implements Domain {
     private void setResultCounts(final Meta meta,
                                  final SearchResponse response) {
         final Integer totalResults = toIntExact(response.getHits().getTotalHits());
-        meta.setTotalResults(totalResults);
-        final Integer resultCount = toIntExact(response.getHits().hits().length);
-        meta.setResultCount(resultCount);
+        final Integer resultCount = toIntExact(response.getHits().internalHits().length);
+        if (meta != null) {
+            meta.setTotalResults(totalResults);
+            meta.setResultCount(resultCount);
+        }
         LOG.info("Search found: " + totalResults + " total hits.");
     }
 }

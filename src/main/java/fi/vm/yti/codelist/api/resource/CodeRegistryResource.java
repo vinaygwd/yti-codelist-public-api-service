@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
-import fi.vm.yti.codelist.api.api.ListResponseWrapper;
+import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.constants.ApiConstants;
 import fi.vm.yti.codelist.common.model.Code;
@@ -42,6 +41,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Api(value = "coderegistries", description = "Operations about coderegistries, codeschemes and codes.")
 @Produces("text/plain")
 public class CodeRegistryResource extends AbstractBaseResource {
+
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
     private final ApiUtils apiUtils;
     private final Domain domain;
@@ -56,24 +56,28 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
     public Response getCodeRegistries(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                       @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                       @ApiParam(value = "CodeRegistry CodeValue as string value.") @QueryParam("codeValue") final String codeRegistryCodeValue,
                                       @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
+                                      @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
-        final Meta meta = new Meta(200, null, null, after);
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
-        final List<CodeRegistry> registryList = new ArrayList<>();
-        final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
-        registryList.addAll(codeRegistries);
-        meta.setResultCount(registryList.size());
-        final ListResponseWrapper<CodeRegistry> wrapper = new ListResponseWrapper<>();
-        wrapper.setResults(registryList);
-        wrapper.setMeta(meta);
-        return Response.ok(wrapper).build();
+        if (FORMAT_CSV.equalsIgnoreCase(format)) {
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null);
+            return Response.ok(constructRegistersCsv(codeRegistries)).build();
+        } else {
+            final Meta meta = new Meta(200, null, null, after);
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
+            meta.setResultCount(codeRegistries.size());
+            final ResponseWrapper<CodeRegistry> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(codeRegistries);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        }
     }
 
     @GET
@@ -105,26 +109,30 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeScheme codeValue as string value for searching.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value for searching.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
+                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/");
-        final Meta meta = new Meta(200, null, null, after);
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         final List<String> statusList = parseStatus(status);
-        if (codeRegistry != null) {
-            final List<CodeScheme> codeSchemesList = new ArrayList<>();
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
-            codeSchemesList.addAll(codeSchemes);
-            meta.setResultCount(codeSchemesList.size());
-            final ListResponseWrapper<CodeScheme> wrapper = new ListResponseWrapper<>();
-            wrapper.setResults(codeSchemesList);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
+        if (FORMAT_CSV.equalsIgnoreCase(format)) {
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
+            return Response.ok(constructCodeSchemesCsv(codeSchemes)).build();
         } else {
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).build();
+            final Meta meta = new Meta(200, null, null, after);
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+            final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+            if (codeRegistry != null) {
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
+                meta.setResultCount(codeSchemes.size());
+                final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+                wrapper.setResults(codeSchemes);
+                wrapper.setMeta(meta);
+                return Response.ok(wrapper).build();
+            } else {
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
         }
     }
 
@@ -147,7 +155,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
         }
     }
 
-
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes")
     @ApiOperation(value = "Return content listing of one register.", response = Code.class)
@@ -160,33 +167,37 @@ public class CodeRegistryResource extends AbstractBaseResource {
                              @ApiParam(value = "Code code.") @QueryParam("codeValue") final String codeCodeValue,
                              @ApiParam(value = "Code PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                              @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") @DefaultValue("VALID") final String status,
+                             @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/");
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final List<String> statusList = parseStatus(status);
-        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        if (codeScheme != null) {
-            final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
-            }
-            final ListResponseWrapper<Code> wrapper = new ListResponseWrapper<>();
-            wrapper.setMeta(meta);
-            if (codes == null) {
+        if (FORMAT_CSV.equalsIgnoreCase(format)) {
+            final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, Meta.parseAfterFromString(after), null);
+            return Response.ok(constructCodesCsv(codes)).build();
+        } else {
+            final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+            final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+            if (codeScheme != null) {
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
+                if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                    meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
+                }
+                final ResponseWrapper<Code> wrapper = new ResponseWrapper<>();
+                wrapper.setMeta(meta);
+                if (codes == null) {
+                    meta.setCode(404);
+                    meta.setMessage("No such resource.");
+                    return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+                }
+                wrapper.setResults(codes);
+                return Response.ok(wrapper).build();
+            } else {
                 meta.setCode(404);
                 meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
-            final List<Code> codesList = new ArrayList<>();
-            codesList.addAll(codes);
-            wrapper.setResults(codesList);
-            return Response.ok(wrapper).build();
-        } else {
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 

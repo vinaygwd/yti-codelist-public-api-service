@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 import fi.vm.yti.codelist.api.api.ErrorWrapper;
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Meta;
 import fi.vm.yti.codelist.common.model.Status;
 
@@ -23,13 +26,15 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+
 abstract class AbstractBaseResource {
 
     public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
     public static final String FILTER_NAME_CODESCHEME = "codeScheme";
     public static final String FILTER_NAME_CODE = "code";
     public static final String FIELD_NAME_URI = "uri";
-    
+
     static class FilterModifier extends ObjectWriterModifier {
         private final FilterProvider provider;
         protected FilterModifier(final FilterProvider provider) {
@@ -99,5 +104,180 @@ abstract class AbstractBaseResource {
                               final String apiVersionPath,
                               final String apiPath) {
         logger.info(method + " " + apiVersionPath + apiPath + " requested!");
+    }
+
+    public void appendNotNull(final StringBuilder builder,
+                              final String string) {
+        if (string != null) {
+            builder.append(string);
+        }
+    }
+
+    public String constructRegistersCsv(final Set<CodeRegistry> registries) {
+        final String csvSeparator = ",";
+        final StringBuilder csv = new StringBuilder();
+        csv.append(CSV_HEADER_CODEVALUE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_ID);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_EN);
+        csv.append("\n");
+        for (final CodeRegistry codeRegistry : registries) {
+            csv.append(codeRegistry.getCodeValue());
+            csv.append(csvSeparator);
+            csv.append(codeRegistry.getId());
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_EN));
+            csv.append("\n");
+        }
+        return csv.toString();
+    }
+
+    public String constructCodeSchemesCsv(final Set<CodeScheme> codeSchemes) {
+        final String csvSeparator = ",";
+        final StringBuilder csv = new StringBuilder();
+        csv.append(CSV_HEADER_CODEVALUE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_ID);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_STATUS);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_CHANGENOTE_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_CHANGENOTE_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_CHANGENOTE_EN);
+        csv.append("\n");
+        for (final CodeScheme codeScheme : codeSchemes) {
+            csv.append(codeScheme.getCodeValue());
+            csv.append(csvSeparator);
+            csv.append(codeScheme.getId());
+            csv.append(csvSeparator);
+            csv.append(codeScheme.getStatus());
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_EN));
+            csv.append("\n");
+        }
+        return csv.toString();
+    }
+
+    public String constructCodesCsv(final Set<Code> codes) {
+        final String csvSeparator = ",";
+        final StringBuilder csv = new StringBuilder();
+        csv.append(CSV_HEADER_CODEVALUE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_ID);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_STATUS);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_PREFLABEL_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DEFINITION_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_FI);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_SE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_DESCRIPTION_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_SHORTNAME);
+        csv.append("\n");
+        for (final Code code : codes) {
+            csv.append(code.getCodeValue());
+            csv.append(csvSeparator);
+            csv.append(code.getId());
+            csv.append(csvSeparator);
+            csv.append(code.getStatus());
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_FI));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_SE));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getShortName());
+            csv.append("\n");
+        }
+        return csv.toString();
     }
 }
