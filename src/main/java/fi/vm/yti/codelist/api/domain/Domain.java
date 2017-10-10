@@ -46,5 +46,4 @@ public interface Domain {
                        final List<String> statuses,
                        final Date after,
                        final Meta meta);
-
 }
