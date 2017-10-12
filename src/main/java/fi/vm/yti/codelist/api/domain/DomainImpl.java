@@ -47,11 +47,11 @@ public class DomainImpl implements Domain {
     }
 
     public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
@@ -82,11 +82,11 @@ public class DomainImpl implements Domain {
                                                final Date after,
                                                final Meta meta) {
         final Set<CodeRegistry> codeRegistries = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
                 .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
@@ -109,11 +109,11 @@ public class DomainImpl implements Domain {
 
     public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                                     final String codeSchemeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
@@ -148,11 +148,11 @@ public class DomainImpl implements Domain {
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
                 .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
@@ -185,11 +185,11 @@ public class DomainImpl implements Domain {
     public Code getCode(final String codeRegistryCodeValue,
                         final String codeSchemeCodeValue,
                         final String codeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
                 .should(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()))
@@ -227,12 +227,12 @@ public class DomainImpl implements Domain {
                               final List<String> statuses,
                               final Date after,
                               final Meta meta) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODELIST).execute().actionGet().isExists();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final Set<Code> codes = new LinkedHashSet<>();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODELIST)
+                .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
                 .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
