@@ -36,8 +36,8 @@ public class ApiUtils {
      * Creates a timestamped resource URL that can be used when fetching new content from this resource.
      *
      * @param apiVersion The REST API version string.
-     * @param apiPath The path for the API resource.
-     * @param after After timestamp in ISO 8601 format for filtering content.
+     * @param apiPath    The path for the API resource.
+     * @param after      After timestamp in ISO 8601 format for filtering content.
      * @return The resource URL for after timestamped results.
      */
     public String createAfterResourceUrl(final String apiVersion,
@@ -67,17 +67,17 @@ public class ApiUtils {
      * Creates the next page resource URL for fetching more content from this resource.
      *
      * @param apiVersion The REST API version string.
-     * @param apiPath The path for the API resource.
-     * @param after After timestamp in ISO 8601 format for filtering content.
-     * @param pageSize Page size used in pagination.
-     * @param from Start index for pagination.
+     * @param apiPath    The path for the API resource.
+     * @param after      After timestamp in ISO 8601 format for filtering content.
+     * @param pageSize   Page size used in pagination.
+     * @param from       Start index for pagination.
      * @return The next page URL.
      */
     public String createNextPageUrl(final String apiVersion,
-                                           final String apiPath,
-                                           final String after,
-                                           final Integer pageSize,
-                                           final Integer from) {
+                                    final String apiPath,
+                                    final String after,
+                                    final Integer pageSize,
+                                    final Integer from) {
         final String port = publicApiServiceProperties.getPort();
         final StringBuilder builder = new StringBuilder();
         builder.append(publicApiServiceProperties.getScheme());
@@ -118,7 +118,7 @@ public class ApiUtils {
     /**
      * Creates a resource URL for given resource id with dynamic hostname, port and API context path mapping.
      *
-     * @param apiPath API path that serves the resource.
+     * @param apiPath    API path that serves the resource.
      * @param resourceId ID of the REST resource.
      * @return Fully concatenated resource URL that can be used in API responses as a link to the resource.
      */

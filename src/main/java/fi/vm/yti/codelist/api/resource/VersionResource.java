@@ -12,7 +12,8 @@ import fi.vm.yti.codelist.api.configuration.VersionInformation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
 
 @Component
 @Path("/version")
@@ -31,7 +32,7 @@ public class VersionResource extends AbstractBaseResource {
     @ApiOperation(value = "Get version information", response = String.class)
     @ApiResponse(code = 200, message = "Returns the version of the running Public API Service application.")
     public String getVersionInformation() {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_VERSION);
+        logApiRequest(LOG, METHOD_GET, "", API_PATH_VERSION);
         return "\n" +
             "       .__                                 ___.   .__  .__        \n" +
             "  ____ |  |   ______           ______  __ _\\_ |__ |  | |__| ____  \n" +
