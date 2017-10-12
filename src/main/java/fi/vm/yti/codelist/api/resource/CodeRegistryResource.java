@@ -22,7 +22,6 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
-import fi.vm.yti.codelist.common.constants.ApiConstants;
 import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
@@ -182,7 +181,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             if (codeScheme != null) {
                 final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                    meta.setNextPage(apiUtils.createNextPageUrl(ApiConstants.API_VERSION, ApiConstants.API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
                 }
                 final ResponseWrapper<Code> wrapper = new ResponseWrapper<>();
                 wrapper.setMeta(meta);
