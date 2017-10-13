@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 import fi.vm.yti.codelist.api.api.ErrorWrapper;
@@ -18,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -154,11 +157,14 @@ abstract class AbstractBaseResource {
     }
 
     public String constructCodeSchemesCsv(final Set<CodeScheme> codeSchemes) {
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         csv.append(CSV_HEADER_CODEVALUE);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_ID);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_VERSION);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_STATUS);
         csv.append(csvSeparator);
@@ -185,11 +191,17 @@ abstract class AbstractBaseResource {
         csv.append(CSV_HEADER_CHANGENOTE_SE);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_CHANGENOTE_EN);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_STARTDATE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_ENDDATE);
         csv.append("\n");
         for (final CodeScheme codeScheme : codeSchemes) {
             csv.append(codeScheme.getCodeValue());
             csv.append(csvSeparator);
             csv.append(codeScheme.getId());
+            csv.append(csvSeparator);
+            csv.append(codeScheme.getVersion());
             csv.append(csvSeparator);
             csv.append(codeScheme.getStatus());
             csv.append(csvSeparator);
@@ -216,12 +228,17 @@ abstract class AbstractBaseResource {
             appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_SE));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
+            csv.append(csvSeparator);
+            appendNotNull(csv, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
             csv.append("\n");
         }
         return csv.toString();
     }
 
     public String constructCodesCsv(final Set<Code> codes) {
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         csv.append(CSV_HEADER_CODEVALUE);
@@ -249,6 +266,10 @@ abstract class AbstractBaseResource {
         csv.append(CSV_HEADER_DESCRIPTION_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_SHORTNAME);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_STARTDATE);
+        csv.append(csvSeparator);
+        csv.append(CSV_HEADER_ENDDATE);
         csv.append("\n");
         for (final Code code : codes) {
             csv.append(code.getCodeValue());
@@ -274,6 +295,10 @@ abstract class AbstractBaseResource {
             appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_SE));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_EN));
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
+            csv.append(csvSeparator);
+            appendNotNull(csv, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
             csv.append(csvSeparator);
             appendNotNull(csv, code.getShortName());
             csv.append("\n");
