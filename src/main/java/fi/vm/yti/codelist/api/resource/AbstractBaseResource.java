@@ -1,23 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
-import fi.vm.yti.codelist.api.api.ErrorWrapper;
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
-import fi.vm.yti.codelist.common.model.CodeScheme;
-import fi.vm.yti.codelist.common.model.Meta;
-import fi.vm.yti.codelist.common.model.Status;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,8 +9,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
+import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
+
+import fi.vm.yti.codelist.api.api.ErrorWrapper;
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
@@ -37,21 +37,6 @@ abstract class AbstractBaseResource {
     public static final String FILTER_NAME_CODESCHEME = "codeScheme";
     public static final String FILTER_NAME_CODE = "code";
     public static final String FIELD_NAME_URI = "uri";
-
-    static class FilterModifier extends ObjectWriterModifier {
-        private final FilterProvider provider;
-        protected FilterModifier(final FilterProvider provider) {
-            this.provider = provider;
-        }
-        @Override
-        public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
-                                   final MultivaluedMap<String, Object> responseHeaders,
-                                   final Object valueToWrite,
-                                   final ObjectWriter w,
-                                   final JsonGenerator g) throws IOException {
-            return w.with(provider);
-        }
-    }
 
     public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
                                                            final String expand) {
@@ -125,13 +110,13 @@ abstract class AbstractBaseResource {
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(CSV_HEADER_PREFLABEL_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(CSV_HEADER_DEFINITION_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_EN);
         csv.append("\n");
@@ -142,13 +127,13 @@ abstract class AbstractBaseResource {
             csv.append(csvSeparator);
             appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_EN));
             csv.append("\n");
@@ -170,25 +155,25 @@ abstract class AbstractBaseResource {
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(CSV_HEADER_PREFLABEL_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(CSV_HEADER_DEFINITION_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DESCRIPTION_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_SE);
+        csv.append(CSV_HEADER_DESCRIPTION_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DESCRIPTION_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_CHANGENOTE_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_CHANGENOTE_SE);
+        csv.append(CSV_HEADER_CHANGENOTE_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_CHANGENOTE_EN);
         csv.append(csvSeparator);
@@ -207,25 +192,25 @@ abstract class AbstractBaseResource {
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
@@ -249,19 +234,19 @@ abstract class AbstractBaseResource {
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SE);
+        csv.append(CSV_HEADER_PREFLABEL_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_PREFLABEL_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SE);
+        csv.append(CSV_HEADER_DEFINITION_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DEFINITION_EN);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DESCRIPTION_FI);
         csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_SE);
+        csv.append(CSV_HEADER_DESCRIPTION_SV);
         csv.append(csvSeparator);
         csv.append(CSV_HEADER_DESCRIPTION_EN);
         csv.append(csvSeparator);
@@ -280,19 +265,19 @@ abstract class AbstractBaseResource {
             csv.append(csvSeparator);
             appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_FI));
             csv.append(csvSeparator);
-            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_SE));
+            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_SV));
             csv.append(csvSeparator);
             appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_EN));
             csv.append(csvSeparator);
@@ -304,5 +289,23 @@ abstract class AbstractBaseResource {
             csv.append("\n");
         }
         return csv.toString();
+    }
+
+    static class FilterModifier extends ObjectWriterModifier {
+
+        private final FilterProvider provider;
+
+        protected FilterModifier(final FilterProvider provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
+                                   final MultivaluedMap<String, Object> responseHeaders,
+                                   final Object valueToWrite,
+                                   final ObjectWriter w,
+                                   final JsonGenerator g) throws IOException {
+            return w.with(provider);
+        }
     }
 }
