@@ -1,4 +1,4 @@
-package fi.vm.yti.codelist.api.resource;
+package fi.vm.yti.codelist.api.integration;
 
 import java.io.IOException;
 

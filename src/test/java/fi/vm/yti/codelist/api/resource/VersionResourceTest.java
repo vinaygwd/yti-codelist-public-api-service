@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {PublicApiServiceApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(locations = {"classpath:test-port.properties"})
+@TestPropertySource(locations = {"classpath:unit-test-port.properties"})
 public class VersionResourceTest extends AbstractTestBase {
 
     @LocalServerPort

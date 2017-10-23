@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-//import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 
@@ -19,14 +18,11 @@ import fi.vm.yti.codelist.api.AbstractTestBase;
 import fi.vm.yti.codelist.api.PublicApiServiceApplication;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_PING;
 import static org.junit.Assert.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//@RunWith(JUnitPlatform.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {PublicApiServiceApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(locations = {"classpath:test-port.properties"})
-//@ExtendWith(SpringExtension.class)
+@TestPropertySource(locations = {"classpath:unit-test-port.properties"})
 public class PingResourceTest extends AbstractTestBase {
 
     @LocalServerPort
