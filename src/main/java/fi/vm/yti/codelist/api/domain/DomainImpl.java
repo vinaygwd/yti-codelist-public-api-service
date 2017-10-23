@@ -75,6 +75,10 @@ public class DomainImpl implements Domain {
         return null;
     }
 
+    public Set<CodeRegistry> getCodeRegistries() {
+        return getCodeRegistries(MAX_SIZE, 0, null, null, null, null);
+    }
+
     public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
                                                final Integer from,
                                                final String codeRegistryCodeValue,
@@ -138,6 +142,10 @@ public class DomainImpl implements Domain {
         return null;
     }
 
+    public Set<CodeScheme> getCodeSchemes() {
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null);
+    }
+
     public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                           final Integer from,
                                           final String codeRegistryCodeValue,
@@ -164,7 +172,7 @@ public class DomainImpl implements Domain {
             if (codeRegistryPrefLabel != null) {
                 builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.sv", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
-            if (!statuses.isEmpty()) {
+            if (statuses != null && !statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
             }
             searchRequest.setQuery(builder);

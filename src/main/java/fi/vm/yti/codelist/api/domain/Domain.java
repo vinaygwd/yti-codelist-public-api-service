@@ -13,6 +13,8 @@ public interface Domain {
 
     CodeRegistry getCodeRegistry(final String codeRegistryCodeValue);
 
+    Set<CodeRegistry> getCodeRegistries();
+
     Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
                                         final Integer from,
                                         final String codeRegistryCodeValue,
@@ -22,6 +24,8 @@ public interface Domain {
 
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                              final String codeSchemeCodeValue);
+
+    Set<CodeScheme> getCodeSchemes();
 
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,
