@@ -470,7 +470,6 @@
         <swagger.version>1.5.15</swagger.version>
         <swagger-ui.version>3.1.5</swagger-ui.version>
         <swagger-maven-plugin.version>3.1.5</swagger-maven-plugin.version>
-        <junit-version>5.0.1</junit-version>
     </properties>
 
 </project>
