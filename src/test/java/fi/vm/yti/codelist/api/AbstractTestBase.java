@@ -67,7 +67,7 @@ abstract public class AbstractTestBase {
         codeScheme.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
         codeScheme.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
         codeScheme.setDefinition(LANGUAGE_CODE_EN, "Test definition");
-        codeScheme.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codoeschemes/" + codeScheme.getCodeValue() + "/");
+        codeScheme.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/");
         codeScheme.setCodeRegistry(codeRegistry);
         codeScheme.setSource(SOURCE_TEST);
         codeScheme.setModified(new Date(System.currentTimeMillis()));
@@ -219,7 +219,7 @@ abstract public class AbstractTestBase {
         code.setCodeScheme(codeScheme);
         code.setSource(SOURCE_TEST);
         code.setModified(new Date(System.currentTimeMillis()));
-        code.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeScheme.getCodeRegistry().getCodeValue() + "/codoeschemes/" + codeScheme.getCodeValue() + "/codes/" + code.getCodeValue() + "/");
+        code.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeScheme.getCodeRegistry().getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/codes/" + code.getCodeValue() + "/");
         return code;
     }
 
