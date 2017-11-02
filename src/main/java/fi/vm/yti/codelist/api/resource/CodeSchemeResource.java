@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 
@@ -9,9 +10,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,9 +66,28 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/");
         final List<String> statusList = parseStatus(status);
-        if (FORMAT_CSV.equalsIgnoreCase(format)) {
+        if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
-            return Response.ok(constructCodeSchemesCsv(codeSchemes)).build();
+            final String csv = constructCodeSchemesCsv(codeSchemes);
+            final StreamingOutput stream = output -> {
+                try {
+                    output.write(csv.getBytes(Charset.forName("UTF-8")));
+                } catch (final Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            };
+            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
+        } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
+            final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
+            final StreamingOutput stream = output -> {
+                try {
+                    workbook.write(output);
+                } catch (final Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            };
+            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));

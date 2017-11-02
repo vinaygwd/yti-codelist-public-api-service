@@ -6,13 +6,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -36,7 +43,12 @@ abstract class AbstractBaseResource {
     public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
     public static final String FILTER_NAME_CODESCHEME = "codeScheme";
     public static final String FILTER_NAME_CODE = "code";
+    public static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
+    public static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
+    public static final String DOWNLOAD_FILENAME_CODES = "codes";
     public static final String FIELD_NAME_URI = "uri";
+
+    public static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
     public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
                                                            final String expand) {
@@ -101,194 +113,378 @@ abstract class AbstractBaseResource {
         }
     }
 
+    private Set<String> resolveCodeRegistryPrefLabelLanguages(final Set<CodeRegistry> registries) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeRegistry registry : registries) {
+            final Map<String, String> prefLabels = registry.getPrefLabels();
+            languages.addAll(prefLabels.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeRegistryDefinitionLanguages(final Set<CodeRegistry> registries) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeRegistry registry : registries) {
+            final Map<String, String> prefLabels = registry.getDefinitions();
+            languages.addAll(prefLabels.keySet());
+        }
+        return languages;
+    }
+
     public String constructRegistersCsv(final Set<CodeRegistry> registries) {
+        final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
+        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        csv.append(CSV_HEADER_CODEVALUE);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_ID);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_EN);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        prefLabelLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        });
+        definitionLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        });
         csv.append("\n");
         for (final CodeRegistry codeRegistry : registries) {
-            csv.append(codeRegistry.getCodeValue());
-            csv.append(csvSeparator);
-            csv.append(codeRegistry.getId());
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getPrefLabels().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeRegistry.getDefinitions().get(LANGUAGE_CODE_EN));
+            appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
+            appendValue(csv, csvSeparator, codeRegistry.getId());
+            prefLabelLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeRegistry.getPrefLabels().get(language));
+            });
+            definitionLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeRegistry.getDefinitions().get(language));
+            });
             csv.append("\n");
         }
         return csv.toString();
+    }
+
+    public Workbook constructRegistriesExcel(final String format,
+                                             final Set<CodeRegistry> registries) {
+        final Workbook workbook = createWorkBook(format);
+        final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
+        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
+        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODEREGISTRIES);
+        final Row rowhead = sheet.createRow((short) 0);
+        int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
+        for (final String language : prefLabelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        }
+        for (final String language : definitionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        }
+        int i = 1;
+        for (final CodeRegistry codeRegistry : registries) {
+            final Row row = sheet.createRow(i++);
+            int k = 0;
+            row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getCodeValue()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getId()));
+            for (final String language : prefLabelLanguages) {
+                row.createCell(k++).setCellValue(codeRegistry.getPrefLabels().get(language));
+            }
+            for (final String language : definitionLanguages) {
+                row.createCell(k++).setCellValue(codeRegistry.getDefinitions().get(language));
+            }
+        }
+        return workbook;
+    }
+
+    private Set<String> resolveCodeSchemePrefLabelLanguages(final Set<CodeScheme> codeSchemes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeScheme codeScheme : codeSchemes) {
+            final Map<String, String> prefLabels = codeScheme.getPrefLabels();
+            languages.addAll(prefLabels.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeSchemeDefinitionLanguages(final Set<CodeScheme> codeSchemes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeScheme codeScheme : codeSchemes) {
+            final Map<String, String> definitions = codeScheme.getDefinitions();
+            languages.addAll(definitions.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeSchemeDescriptionLanguages(final Set<CodeScheme> codeSchemes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeScheme codeScheme : codeSchemes) {
+            final Map<String, String> descriptions = codeScheme.getDescriptions();
+            languages.addAll(descriptions.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeSchemeChangeNoteLanguages(final Set<CodeScheme> codeSchemes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeScheme codeScheme : codeSchemes) {
+            final Map<String, String> changeNotes = codeScheme.getChangeNotes();
+            languages.addAll(changeNotes.keySet());
+        }
+        return languages;
     }
 
     public String constructCodeSchemesCsv(final Set<CodeScheme> codeSchemes) {
+        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
         final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        csv.append(CSV_HEADER_CODEVALUE);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_ID);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_VERSION);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_STATUS);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_CHANGENOTE_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_CHANGENOTE_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_CHANGENOTE_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_STARTDATE);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_ENDDATE);
-        csv.append("\n");
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
+        prefLabelLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        });
+        definitionLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        });
+        descriptionLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
+        });
+        changeNoteLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase());
+        });
+        appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeScheme codeScheme : codeSchemes) {
-            csv.append(codeScheme.getCodeValue());
-            csv.append(csvSeparator);
-            csv.append(codeScheme.getId());
-            csv.append(csvSeparator);
-            csv.append(codeScheme.getVersion());
-            csv.append(csvSeparator);
-            csv.append(codeScheme.getStatus());
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getPrefLabels().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDefinitions().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getDescriptions().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getChangeNotes().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
-            csv.append(csvSeparator);
-            appendNotNull(csv, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
-            csv.append("\n");
+            appendValue(csv, csvSeparator, codeScheme.getCodeValue());
+            appendValue(csv, csvSeparator, codeScheme.getId());
+            appendValue(csv, csvSeparator, codeScheme.getVersion());
+            appendValue(csv, csvSeparator, codeScheme.getStatus());
+            prefLabelLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeScheme.getPrefLabels().get(language));
+            });
+            definitionLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeScheme.getDefinitions().get(language));
+            });
+            descriptionLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeScheme.getDescriptions().get(language));
+            });
+            changeNoteLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, codeScheme.getChangeNotes().get(language));
+            });
+            appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "", true);
         }
         return csv.toString();
     }
 
+    private Workbook createWorkBook(final String format) {
+        if (FORMAT_EXCEL_XLSX.equals(format)) {
+            return new XSSFWorkbook();
+        } else {
+            return new HSSFWorkbook();
+        }
+    }
+
+    public Workbook constructCodeSchemesExcel(final String format,
+                                              final Set<CodeScheme> codeSchemes) {
+        final Workbook workbook = createWorkBook(format);
+        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODESCHEMES);
+        final Row rowhead = sheet.createRow((short) 0);
+        int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VERSION);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
+        for (final String language : prefLabelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        }
+        for (final String language : definitionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        }
+        for (final String language : descriptionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
+        }
+        for (final String language : changeNoteLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase());
+        }
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
+        int i = 1;
+        for (final CodeScheme codeScheme : codeSchemes) {
+            Row row = sheet.createRow(i++);
+            int k = 0;
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getStatus()));
+            for (final String language : prefLabelLanguages) {
+                row.createCell(k++).setCellValue(codeScheme.getPrefLabels().get(language));
+            }
+            for (final String language : definitionLanguages) {
+                row.createCell(k++).setCellValue(codeScheme.getDefinitions().get(language));
+            }
+            for (final String language : descriptionLanguages) {
+                row.createCell(k++).setCellValue(codeScheme.getDescriptions().get(language));
+            }
+            for (final String language : changeNoteLanguages) {
+                row.createCell(k++).setCellValue(codeScheme.getChangeNotes().get(language));
+            }
+            row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
+            row.createCell(k).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
+        }
+        return workbook;
+    }
+
+    private Set<String> resolveCodePrefLabelLanguages(final Set<Code> codes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final Code code : codes) {
+            final Map<String, String> prefLabels = code.getPrefLabels();
+            languages.addAll(prefLabels.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeDefinitionLanguages(final Set<Code> codes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final Code code : codes) {
+            final Map<String, String> definitions = code.getDefinitions();
+            languages.addAll(definitions.keySet());
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeDescriptionLanguages(final Set<Code> codes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final Code code : codes) {
+            final Map<String, String> descriptions = code.getDescriptions();
+            languages.addAll(descriptions.keySet());
+        }
+        return languages;
+    }
+
     public String constructCodesCsv(final Set<Code> codes) {
+        final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
+        final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
+        final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
         final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        csv.append(CSV_HEADER_CODEVALUE);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_ID);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_STATUS);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_PREFLABEL_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DEFINITION_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_FI);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_SV);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_DESCRIPTION_EN);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_SHORTNAME);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_STARTDATE);
-        csv.append(csvSeparator);
-        csv.append(CSV_HEADER_ENDDATE);
-        csv.append("\n");
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
+        prefLabelLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        });
+        definitionLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        });
+        descriptionLanguages.forEach(language -> {
+            appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
+        });
+        appendValue(csv, csvSeparator, CONTENT_HEADER_SHORTNAME);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final Code code : codes) {
-            csv.append(code.getCodeValue());
-            csv.append(csvSeparator);
-            csv.append(code.getId());
-            csv.append(csvSeparator);
-            csv.append(code.getStatus());
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getPrefLabels().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDefinitions().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_FI));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_SV));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getDescriptions().get(LANGUAGE_CODE_EN));
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
-            csv.append(csvSeparator);
-            appendNotNull(csv, code.getShortName());
-            csv.append("\n");
+            appendValue(csv, csvSeparator, code.getCodeValue());
+            appendValue(csv, csvSeparator, code.getId());
+            appendValue(csv, csvSeparator, code.getStatus());
+            prefLabelLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, code.getPrefLabels().get(language));
+            });
+            definitionLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, code.getDefinitions().get(language));
+            });
+            descriptionLanguages.forEach(language -> {
+                appendValue(csv, csvSeparator, code.getDescriptions().get(language));
+            });
+            appendValue(csv, csvSeparator, code.getShortName());
+            appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
+            appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
         }
         return csv.toString();
+    }
+
+    public Workbook constructCodesExcel(final String format,
+                                        final Set<Code> codes) {
+        final Workbook workbook = createWorkBook(format);
+        final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
+        final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
+        final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODES);
+        final Row rowhead = sheet.createRow((short) 0);
+        int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
+        for (final String language : prefLabelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        }
+        for (final String language : definitionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        }
+        for (final String language : descriptionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
+        }
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
+        int i = 1;
+        for (final Code code : codes) {
+            final Row row = sheet.createRow(i++);
+            int k = 0;
+            row.createCell(k++).setCellValue(code.getCodeValue());
+            row.createCell(k++).setCellValue(code.getId());
+            row.createCell(k++).setCellValue(code.getStatus());
+            for (final String language : prefLabelLanguages) {
+                row.createCell(k++).setCellValue(code.getPrefLabels().get(language));
+            }
+            for (final String language : definitionLanguages) {
+                row.createCell(k++).setCellValue(code.getDefinitions().get(language));
+            }
+            for (final String language : descriptionLanguages) {
+                row.createCell(k++).setCellValue(code.getDescriptions().get(language));
+            }
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
+            row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
+            row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+        }
+        return workbook;
+    }
+
+    private String checkEmptyValue(final String value) {
+        if (value == null) {
+            return "";
+        }
+        return value;
+    }
+
+    private void appendValue(final StringBuilder builder, final String separator, final String value) {
+        appendValue(builder, separator, value, false);
+    }
+
+    private void appendValue(final StringBuilder builder, final String separator, final String value, final boolean isLast) {
+        builder.append(checkEmptyValue(value));
+        if (isLast) {
+            builder.append("\n");
+        } else {
+            builder.append(separator);
+        }
+    }
+
+    public String createDownloadFilename(final String format,
+                                         final String filename) {
+        if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format)) {
+            return filename + "." + FORMAT_EXCEL_XLS;
+        } else if (FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+            return filename + "." + FORMAT_EXCEL_XLSX;
+        } else {
+            return filename + "." + FORMAT_CSV;
+        }
     }
 
     static class FilterModifier extends ObjectWriterModifier {

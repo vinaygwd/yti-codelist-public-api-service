@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -10,9 +11,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -53,9 +57,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
+    @ApiOperation(value = "Return a list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Returns all CodeRegistries in specified format.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistries(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                       @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                       @ApiParam(value = "CodeRegistry CodeValue as string value.") @QueryParam("codeValue") final String codeRegistryCodeValue,
@@ -66,7 +70,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null);
-            return Response.ok(constructRegistersCsv(codeRegistries)).build();
+            final String csv = constructRegistersCsv(codeRegistries);
+            final StreamingOutput stream = output -> {
+                try {
+                    output.write(csv.getBytes(StandardCharsets.UTF_8));
+                } catch (final Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            };
+            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODEREGISTRIES)).build();
+        } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null);
+            final Workbook workbook = constructRegistriesExcel(format, codeRegistries);
+            final StreamingOutput stream = output -> {
+                try {
+                    workbook.write(output);
+                } catch (final Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            };
+            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODEREGISTRIES)).build();
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
@@ -98,9 +121,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes")
-    @ApiOperation(value = "Return list of available CodeRegistries.", response = CodeRegistry.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @ApiOperation(value = "Return CodeSchemes for a CodeRegistry.", response = CodeRegistry.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Returns CodeSchemes for a CodeRegistry in specified format.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistryCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -111,27 +134,46 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/");
+        final Meta meta = new Meta(200, null, null, after);
         final List<String> statusList = parseStatus(status);
-        if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
-            return Response.ok(constructCodeSchemesCsv(codeSchemes)).build();
-        } else {
-            final Meta meta = new Meta(200, null, null, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-            final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
-            if (codeRegistry != null) {
+        final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+        if (codeRegistry != null) {
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
+                final String csv = constructCodeSchemesCsv(codeSchemes);
+                final StreamingOutput stream = output -> {
+                    try {
+                        output.write(csv.getBytes(StandardCharsets.UTF_8));
+                    } catch (final Exception e) {
+                        throw new WebApplicationException(e);
+                    }
+                };
+                return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, Meta.parseAfterFromString(after), null);
+                final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
+                final StreamingOutput stream = output -> {
+                    try {
+                        workbook.write(output);
+                    } catch (final Exception e) {
+                        throw new WebApplicationException(e);
+                    }
+                };
+                return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
                 final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, meta.getAfter(), meta);
                 meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);
                 wrapper.setMeta(meta);
                 return Response.ok(wrapper).build();
-            } else {
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).build();
             }
+        } else {
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 
@@ -143,7 +185,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistryCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -156,9 +198,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes")
-    @ApiOperation(value = "Return content listing of one register.", response = Code.class)
-    @ApiResponse(code = 200, message = "Returns a register matching code in JSON format.")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @ApiOperation(value = "Return codes for a CodeScheme.", response = Code.class)
+    @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistryCodeSchemeCodes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                    @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -169,16 +211,35 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/");
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final List<String> statusList = parseStatus(status);
-        if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, Meta.parseAfterFromString(after), null);
-            return Response.ok(constructCodesCsv(codes)).build();
-        } else {
-            final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-            final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-            if (codeScheme != null) {
+        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        if (codeScheme != null) {
+            if (FORMAT_CSV.equalsIgnoreCase(format)) {
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, Meta.parseAfterFromString(after), null);
+                final String csv = constructCodesCsv(codes);
+                final StreamingOutput stream = output -> {
+                    try {
+                        output.write(csv.getBytes(StandardCharsets.UTF_8));
+                    } catch (final Exception e) {
+                        throw new WebApplicationException(e);
+                    }
+                };
+                return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODES)).build();
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, Meta.parseAfterFromString(after), null);
+                final Workbook workbook = constructCodesExcel(format, codes);
+                final StreamingOutput stream = output -> {
+                    try {
+                        workbook.write(output);
+                    } catch (final Exception e) {
+                        throw new WebApplicationException(e);
+                    }
+                };
+                return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODES)).build();
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
                 final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
@@ -192,11 +253,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 }
                 wrapper.setResults(codes);
                 return Response.ok(wrapper).build();
-            } else {
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).build();
             }
+        } else {
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 
@@ -209,7 +270,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                   @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                   @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/codeschemes/" + codeSchemeCodeValue + "/codes/" + codeCodeValue);
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final Code code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code == null) {

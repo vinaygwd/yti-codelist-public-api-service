@@ -81,6 +81,19 @@
             <version>2.5</version><!--$NO-MVN-MAN-VER$ -->
         </dependency>
 
+        <!-- Apache POI -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.17</version>
+        </dependency>
+
         <!-- Elastic Search related Log4J -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
