@@ -26,9 +26,6 @@ public class VersionInformation {
         if (version == null) {
             version = versionId;
         }
-        version = version + " build " + commitId;
-
-        return version;
+        return version + " build " + commitId;
     }
-
 }

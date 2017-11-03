@@ -313,7 +313,7 @@ abstract class AbstractBaseResource {
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
         for (final CodeScheme codeScheme : codeSchemes) {
-            Row row = sheet.createRow(i++);
+            final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId()));
