@@ -41,8 +41,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
  */
 @Component
 @Path("/v1/coderegistries")
-@Api(value = "coderegistries", description = "Operations about coderegistries, codeschemes and codes.")
-@Produces("text/plain")
+@Api(value = "coderegistries", description = "Operations about CodeRegistries, CodeSchemes and Codes.")
+@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeRegistryResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
@@ -171,9 +171,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(wrapper).build();
             }
         } else {
+            final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
             meta.setCode(404);
             meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
         }
     }
 
@@ -255,9 +257,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(wrapper).build();
             }
         } else {
+            final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
             meta.setCode(404);
             meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
         }
     }
 

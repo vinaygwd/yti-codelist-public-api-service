@@ -1,13 +1,15 @@
 package fi.vm.yti.codelist.api.domain;
 
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
-import fi.vm.yti.codelist.common.model.CodeScheme;
-import fi.vm.yti.codelist.common.model.Meta;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.ExternalReference;
+import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.model.PropertyType;
 
 public interface Domain {
 
@@ -50,4 +52,24 @@ public interface Domain {
                        final List<String> statuses,
                        final Date after,
                        final Meta meta);
+
+    PropertyType getPropertyType(final String propertyTypeId);
+
+    Set<PropertyType> getPropertyTypes();
+
+    Set<PropertyType> getPropertyTypes(final Integer pageSize,
+                                       final Integer from,
+                                       final String propertyTypePrefLabel,
+                                       final Date after,
+                                       final Meta meta);
+
+    ExternalReference getExternalReference(final String externalReferenceId);
+
+    Set<ExternalReference> getExternalReferences();
+
+    Set<ExternalReference> getExternalReferences(final Integer pageSize,
+                                            final Integer from,
+                                            final String externalReferencePrefLabel,
+                                            final Date after,
+                                            final Meta meta);
 }

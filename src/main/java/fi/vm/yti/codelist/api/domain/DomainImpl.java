@@ -28,7 +28,9 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.ExternalReference;
 import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.model.PropertyType;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -55,7 +57,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id.keyword", codeRegistryCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("id", codeRegistryCodeValue.toLowerCase()))
                 .should(QueryBuilders.matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
@@ -64,8 +66,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        final CodeRegistry codeRegistry = mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
-                        return codeRegistry;
+                        return mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -101,8 +102,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final CodeRegistry codeRegistry = mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
-                    codeRegistries.add(codeRegistry);
+                    codeRegistries.add(mapper.readValue(hit.getSourceAsString(), CodeRegistry.class));
                 } catch (IOException e) {
                     LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -121,7 +121,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id.keyword", codeSchemeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("id", codeSchemeCodeValue.toLowerCase()))
                 .should(QueryBuilders.matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
@@ -131,8 +131,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        final CodeScheme codeScheme = mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
-                        return codeScheme;
+                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -180,8 +179,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final CodeScheme codeScheme = mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
-                    codeSchemes.add(codeScheme);
+                    codeSchemes.add(mapper.readValue(hit.getSourceAsString(), CodeScheme.class));
                 } catch (IOException e) {
                     LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -200,7 +198,7 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id.keyword", codeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("id", codeCodeValue.toLowerCase()))
                 .should(QueryBuilders.matchQuery("codeValue", codeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
             builder.must(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()));
@@ -213,8 +211,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
-                        return code;
+                        return mapper.readValue(hit.getSourceAsString(), Code.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -257,8 +254,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final Code code = mapper.readValue(hit.getSourceAsString(), Code.class);
-                    codes.add(code);
+                    codes.add(mapper.readValue(hit.getSourceAsString(), Code.class));
                 } catch (IOException e) {
                     LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -268,6 +264,126 @@ public class DomainImpl implements Domain {
         return null;
     }
 
+    public PropertyType getPropertyType(final String propertyTypeId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
+                .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
+            final BoolQueryBuilder builder = boolQuery()
+                .should(QueryBuilders.matchQuery("id", propertyTypeId.toLowerCase()))
+                .minimumShouldMatch(1);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), PropertyType.class);
+                    }
+                } catch (IOException e) {
+                    LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+
+    public Set<PropertyType> getPropertyTypes() {
+        return getPropertyTypes(MAX_SIZE, 0, null, null, null);
+    }
+
+    public Set<PropertyType> getPropertyTypes(final Integer pageSize,
+                                              final Integer from,
+                                              final String codeRegistryPrefLabel,
+                                              final Date after,
+                                              final Meta meta) {
+        final Set<PropertyType> propertyTypes = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
+                .setTypes(ELASTIC_TYPE_PROPERTYTYPE)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = constructSearchQuery(null, codeRegistryPrefLabel, after);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final PropertyType propertyType = mapper.readValue(hit.getSourceAsString(), PropertyType.class);
+                    propertyTypes.add(propertyType);
+                } catch (IOException e) {
+                    LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            });
+        }
+        return propertyTypes;
+    }
+
+    public ExternalReference getExternalReference(final String externalReferenceId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
+                .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE);
+            final BoolQueryBuilder builder = boolQuery()
+                .should(QueryBuilders.matchQuery("id", externalReferenceId.toLowerCase()))
+                .minimumShouldMatch(1);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        final ExternalReference externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
+                        return externalReference;
+                    }
+                } catch (IOException e) {
+                    LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+
+    public Set<ExternalReference> getExternalReferences() {
+        return getExternalReferences(MAX_SIZE, 0, null, null, null);
+    }
+
+    public Set<ExternalReference> getExternalReferences(final Integer pageSize,
+                                              final Integer from,
+                                              final String codeRegistryPrefLabel,
+                                              final Date after,
+                                              final Meta meta) {
+        final Set<ExternalReference> externalReferences = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
+                .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = constructSearchQuery(null, codeRegistryPrefLabel, after);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ExternalReference externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
+                    externalReferences.add(externalReference);
+                } catch (IOException e) {
+                    LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            });
+        }
+        return externalReferences;
+    }
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
                                                   final String prefLabel,
                                                   final Date after) {

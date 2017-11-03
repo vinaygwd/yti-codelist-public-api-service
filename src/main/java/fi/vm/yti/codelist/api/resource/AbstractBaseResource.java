@@ -40,13 +40,9 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
 
-    public static final String FILTER_NAME_CODEREGISTRY = "codeRegistry";
-    public static final String FILTER_NAME_CODESCHEME = "codeScheme";
-    public static final String FILTER_NAME_CODE = "code";
     public static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
     public static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
     public static final String DOWNLOAD_FILENAME_CODES = "codes";
-    public static final String FIELD_NAME_URI = "uri";
 
     public static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
@@ -63,6 +59,8 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_EXTERNALREFERENCE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_PROPERTYTYPE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
             filterProvider.removeFilter(baseFilter);
@@ -276,7 +274,7 @@ abstract class AbstractBaseResource {
         return csv.toString();
     }
 
-    private Workbook createWorkBook(final String format) {
+    public Workbook createWorkBook(final String format) {
         if (FORMAT_EXCEL_XLSX.equals(format)) {
             return new XSSFWorkbook();
         } else {
@@ -456,14 +454,14 @@ abstract class AbstractBaseResource {
         return workbook;
     }
 
-    private String checkEmptyValue(final String value) {
+    public String checkEmptyValue(final String value) {
         if (value == null) {
             return "";
         }
         return value;
     }
 
-    private void appendValue(final StringBuilder builder, final String separator, final String value) {
+    public void appendValue(final StringBuilder builder, final String separator, final String value) {
         appendValue(builder, separator, value, false);
     }
 

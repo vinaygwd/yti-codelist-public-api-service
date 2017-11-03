@@ -33,5 +33,4 @@ public class ResponseWrapper<T> {
     public void setResults(final Set<T> results) {
         this.results = results;
     }
-
 }

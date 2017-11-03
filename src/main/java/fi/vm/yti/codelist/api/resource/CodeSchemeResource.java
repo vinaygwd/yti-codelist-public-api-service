@@ -1,6 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -38,8 +38,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
  */
 @Component
 @Path("/v1/codeschemes")
-@Api(value = "codeschemes", description = "Operations about codeschemes.")
-@Produces("text/plain")
+@Api(value = "codeschemes", description = "Operations about CodeSchemes.")
+@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeSchemeResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
@@ -71,7 +71,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
             final String csv = constructCodeSchemesCsv(codeSchemes);
             final StreamingOutput stream = output -> {
                 try {
-                    output.write(csv.getBytes(Charset.forName("UTF-8")));
+                    output.write(csv.getBytes(StandardCharsets.UTF_8));
                 } catch (final Exception e) {
                     throw new WebApplicationException(e);
                 }
