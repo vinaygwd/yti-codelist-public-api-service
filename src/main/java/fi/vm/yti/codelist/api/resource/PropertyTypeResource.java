@@ -140,7 +140,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_NOTATION);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_TYPE);
         prefLabelLanguages.forEach(language -> {
             appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         });
@@ -149,7 +150,9 @@ public class PropertyTypeResource extends AbstractBaseResource {
         });
         csv.append("\n");
         for (final PropertyType propertyType : propertyTypes) {
-            appendValue(csv, csvSeparator, propertyType.getId());
+            appendValue(csv, csvSeparator, propertyType.getId().toString());
+            appendValue(csv, csvSeparator, propertyType.getLocalName());
+            appendValue(csv, csvSeparator, propertyType.getType());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, propertyType.getPrefLabels().get(language));
             });
@@ -170,7 +173,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_NOTATION);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TYPE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -181,8 +185,9 @@ public class PropertyTypeResource extends AbstractBaseResource {
         for (final PropertyType propertyType : propertyTypes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getId()));
-            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getNotation()));
+            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getId().toString()));
+            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getLocalName()));
+            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getType()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(propertyType.getPrefLabels().get(language));
             }

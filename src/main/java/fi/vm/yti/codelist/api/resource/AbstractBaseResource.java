@@ -145,7 +145,7 @@ abstract class AbstractBaseResource {
         csv.append("\n");
         for (final CodeRegistry codeRegistry : registries) {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
-            appendValue(csv, csvSeparator, codeRegistry.getId());
+            appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, codeRegistry.getPrefLabels().get(language));
             });
@@ -178,7 +178,7 @@ abstract class AbstractBaseResource {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getCodeValue()));
-            row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getId()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getId().toString()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeRegistry.getPrefLabels().get(language));
             }
@@ -237,6 +237,10 @@ abstract class AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_SOURCE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_LEGALBASE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_GOVERNANCEPOLICY);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_LICENSE);
         prefLabelLanguages.forEach(language -> {
             appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         });
@@ -253,9 +257,13 @@ abstract class AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeScheme codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
-            appendValue(csv, csvSeparator, codeScheme.getId());
+            appendValue(csv, csvSeparator, codeScheme.getId().toString());
             appendValue(csv, csvSeparator, codeScheme.getVersion());
             appendValue(csv, csvSeparator, codeScheme.getStatus());
+            appendValue(csv, csvSeparator, codeScheme.getSource());
+            appendValue(csv, csvSeparator, codeScheme.getLegalBase());
+            appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
+            appendValue(csv, csvSeparator, codeScheme.getLicense());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, codeScheme.getPrefLabels().get(language));
             });
@@ -297,6 +305,10 @@ abstract class AbstractBaseResource {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VERSION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SOURCE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LEGALBASE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_GOVERNANCEPOLICY);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LICENSE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -316,9 +328,13 @@ abstract class AbstractBaseResource {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
-            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getStatus()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getSource()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLegalBase()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getGovernancePolicy()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLicense()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeScheme.getPrefLabels().get(language));
             }
@@ -388,7 +404,7 @@ abstract class AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final Code code : codes) {
             appendValue(csv, csvSeparator, code.getCodeValue());
-            appendValue(csv, csvSeparator, code.getId());
+            appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getStatus());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, code.getPrefLabels().get(language));
@@ -436,7 +452,7 @@ abstract class AbstractBaseResource {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(code.getCodeValue());
-            row.createCell(k++).setCellValue(code.getId());
+            row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(code.getPrefLabels().get(language));
@@ -466,7 +482,13 @@ abstract class AbstractBaseResource {
     }
 
     private void appendValue(final StringBuilder builder, final String separator, final String value, final boolean isLast) {
-        builder.append(checkEmptyValue(value));
+        if (value != null && value.contains(",")) {
+            builder.append("\"");
+            builder.append(checkEmptyValue(value));
+            builder.append("\"");
+        } else {
+            builder.append(checkEmptyValue(value));
+        }
         if (isLast) {
             builder.append("\n");
         } else {

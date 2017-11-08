@@ -58,7 +58,7 @@ abstract public class AbstractTestBase {
     private CodeScheme createCodeScheme(final CodeRegistry codeRegistry,
                                         final String codeValue) {
         final CodeScheme codeScheme = new CodeScheme();
-        codeScheme.setId(UUID.randomUUID().toString());
+        codeScheme.setId(UUID.randomUUID());
         codeScheme.setCodeValue(codeValue);
         codeScheme.setStatus(Status.VALID.toString());
         codeScheme.setPrefLabel(LANGUAGE_CODE_FI, "Testikoodisto");
@@ -178,7 +178,7 @@ abstract public class AbstractTestBase {
 
     private CodeRegistry createCodeRegistry(final String codeValue) {
         final CodeRegistry codeRegistry = new CodeRegistry();
-        codeRegistry.setId(UUID.randomUUID().toString());
+        codeRegistry.setId(UUID.randomUUID());
         codeRegistry.setCodeValue(codeValue);
         codeRegistry.setPrefLabel(LANGUAGE_CODE_FI, "Testirekisteri");
         codeRegistry.setPrefLabel(LANGUAGE_CODE_SV, "Test register");
@@ -186,7 +186,6 @@ abstract public class AbstractTestBase {
         codeRegistry.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
         codeRegistry.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
         codeRegistry.setDefinition(LANGUAGE_CODE_EN, "Test definition");
-        codeRegistry.setSource(SOURCE_TEST);
         codeRegistry.setModified(new Date(System.currentTimeMillis()));
         codeRegistry.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeValue + "/");
         return codeRegistry;
@@ -203,7 +202,7 @@ abstract public class AbstractTestBase {
     private Code createCode(final CodeScheme codeScheme,
                             final String codeValue) {
         final Code code = new Code();
-        code.setId(UUID.randomUUID().toString());
+        code.setId(UUID.randomUUID());
         code.setCodeValue(codeValue);
         code.setStatus(Status.VALID.toString());
         code.setPrefLabel(LANGUAGE_CODE_FI, "Testikoodi");
@@ -217,7 +216,6 @@ abstract public class AbstractTestBase {
         code.setDefinition(LANGUAGE_CODE_EN, "Test description");
         code.setShortName("ABR");
         code.setCodeScheme(codeScheme);
-        code.setSource(SOURCE_TEST);
         code.setModified(new Date(System.currentTimeMillis()));
         code.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeScheme.getCodeRegistry().getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/codes/" + code.getCodeValue() + "/");
         return code;

@@ -140,7 +140,6 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_NOTATION);
         titleLanguages.forEach(language -> {
             appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         });
@@ -149,7 +148,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         });
         csv.append("\n");
         for (final ExternalReference externalReference : externalReferences) {
-            appendValue(csv, csvSeparator, externalReference.getId());
+            appendValue(csv, csvSeparator, externalReference.getId().toString());
             titleLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, externalReference.getTitles().get(language));
             });
@@ -180,7 +179,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         for (final ExternalReference externalReference : externalReferences) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getId()));
+            row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getId().toString()));
             for (final String language : titleLanguages) {
                 row.createCell(k++).setCellValue(externalReference.getTitles().get(language));
             }
