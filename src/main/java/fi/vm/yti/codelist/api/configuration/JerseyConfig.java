@@ -35,8 +35,8 @@ import io.swagger.annotations.SwaggerDefinition;
             email = "yhteentoimivuus@vrk.fi"
         ),
         license = @License(
-                name = "EUPL-1.2",
-                url = "https://opensource.org/licenses/EUPL-1.1"
+            name = "EUPL-1.2",
+            url = "https://opensource.org/licenses/EUPL-1.1"
         )
     ),
     host = "localhost:9601",

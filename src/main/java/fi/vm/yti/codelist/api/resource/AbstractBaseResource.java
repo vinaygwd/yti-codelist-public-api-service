@@ -89,12 +89,20 @@ abstract class AbstractBaseResource {
         if (statusCsl != null) {
             for (final String s : Arrays.asList(statusCsl.split(","))) {
                 final Status status = Status.valueOf(s.trim());
-                if (status != null) {
-                    statusSet.add(status.toString());
-                }
+                statusSet.add(status.toString());
             }
         }
         return new ArrayList<String>(statusSet);
+    }
+
+    public List<String> parseServiceClassifications(final String serviceClassificationCsl) {
+        final Set<String> serviceClassificationsSet = new HashSet<>();
+        if (serviceClassificationCsl != null) {
+            for (final String s : Arrays.asList(serviceClassificationCsl.split(","))) {
+                serviceClassificationsSet.add(s.trim());
+            }
+        }
+        return new ArrayList<String>(serviceClassificationsSet);
     }
 
     public void logApiRequest(final Logger logger,

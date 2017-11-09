@@ -142,7 +142,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeScheme> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
@@ -152,6 +152,7 @@ public class DomainImpl implements Domain {
                                           final String codeSchemeCodeValue,
                                           final String codeSchemePrefLabel,
                                           final List<String> statuses,
+                                          final List<String> serviceClassifications,
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
@@ -169,11 +170,15 @@ public class DomainImpl implements Domain {
                 builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             }
             if (codeRegistryPrefLabel != null) {
-                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.sv", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            }
+            if (serviceClassifications != null && !serviceClassifications.isEmpty()) {
+                builder.must(QueryBuilders.nestedQuery("serviceClassifications", QueryBuilders.termsQuery("serviceClassifications.codeValue.keyword", serviceClassifications), ScoreMode.None));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
             }
+            final String elasticQuery = builder.toString();
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
@@ -392,7 +397,7 @@ public class DomainImpl implements Domain {
             builder.must(QueryBuilders.prefixQuery("codeValue", codeValue.toLowerCase()));
         }
         if (prefLabel != null) {
-            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabels.fi", "prefLabels.sv", "prefLabels.en").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabels.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
