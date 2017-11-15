@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
- * REST resources for registries, schemes and codes.
+ * REST resources for CodeRegistries, CodeSchemes and Codes.
  */
 @Component
 @Path("/v1/coderegistries")
@@ -127,7 +127,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistryCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                               @ApiParam(value = "Service classifications in CSL format.") @QueryParam("serviceClassification") final String serviceClassification,
+                                               @ApiParam(value = "Service classifications in CSL format.") @QueryParam("dataClassification") final String dataClassification,
                                                @ApiParam(value = "CodeRegistry PrefLabel as string value for searching.") @QueryParam("codeRegistryPrefLabel") final String codeRegistryPrefLabel,
                                                @ApiParam(value = "CodeScheme codeValue as string value for searching.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                                @ApiParam(value = "CodeScheme PrefLabel as string value for searching.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
@@ -137,12 +137,12 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/");
         final Meta meta = new Meta(200, null, null, after);
-        final List<String> serviceClassificationList = parseServiceClassifications(serviceClassification);
+        final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, serviceClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final String csv = constructCodeSchemesCsv(codeSchemes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -153,7 +153,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 };
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, serviceClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -165,7 +165,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, serviceClassificationList, meta.getAfter(), meta);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
                 meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);

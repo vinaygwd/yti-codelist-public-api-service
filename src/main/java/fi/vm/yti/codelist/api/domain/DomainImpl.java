@@ -152,7 +152,7 @@ public class DomainImpl implements Domain {
                                           final String codeSchemeCodeValue,
                                           final String codeSchemePrefLabel,
                                           final List<String> statuses,
-                                          final List<String> serviceClassifications,
+                                          final List<String> dataClassifications,
                                           final Date after,
                                           final Meta meta) {
         final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
@@ -172,8 +172,8 @@ public class DomainImpl implements Domain {
             if (codeRegistryPrefLabel != null) {
                 builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
-            if (serviceClassifications != null && !serviceClassifications.isEmpty()) {
-                builder.must(QueryBuilders.nestedQuery("serviceClassifications", QueryBuilders.termsQuery("serviceClassifications.codeValue.keyword", serviceClassifications), ScoreMode.None));
+            if (dataClassifications != null && !dataClassifications.isEmpty()) {
+                builder.must(QueryBuilders.nestedQuery("dataClassifications", QueryBuilders.termsQuery("dataClassifications.codeValue.keyword", dataClassifications), ScoreMode.None));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));

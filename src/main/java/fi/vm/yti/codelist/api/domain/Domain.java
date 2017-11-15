@@ -36,7 +36,7 @@ public interface Domain {
                                    final String codeSchemeCodeValue,
                                    final String codeSchemeCodePrefLabel,
                                    final List<String> statuses,
-                                   final List<String> serviceClassifications,
+                                   final List<String> dataClassifications,
                                    final Date after,
                                    final Meta meta);
 
