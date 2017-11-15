@@ -178,7 +178,6 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
             }
-            final String elasticQuery = builder.toString();
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
