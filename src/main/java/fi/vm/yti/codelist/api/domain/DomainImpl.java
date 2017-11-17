@@ -315,7 +315,7 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel, after);
             if (context != null) {
-                builder.must(QueryBuilders.prefixQuery("context", context));
+                builder.must(QueryBuilders.prefixQuery("context", context.toLowerCase()));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
