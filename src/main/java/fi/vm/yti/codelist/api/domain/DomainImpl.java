@@ -295,12 +295,13 @@ public class DomainImpl implements Domain {
     }
 
     public Set<PropertyType> getPropertyTypes() {
-        return getPropertyTypes(MAX_SIZE, 0, null, null, null);
+        return getPropertyTypes(MAX_SIZE, 0, null, null,null, null);
     }
 
     public Set<PropertyType> getPropertyTypes(final Integer pageSize,
                                               final Integer from,
-                                              final String codeRegistryPrefLabel,
+                                              final String propertyTypePrefLabel,
+                                              final String context,
                                               final Date after,
                                               final Meta meta) {
         final Set<PropertyType> propertyTypes = new LinkedHashSet<>();
@@ -312,7 +313,10 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
-            final BoolQueryBuilder builder = constructSearchQuery(null, codeRegistryPrefLabel, after);
+            final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel, after);
+            if (context != null) {
+                builder.must(QueryBuilders.prefixQuery("context", context));
+            }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

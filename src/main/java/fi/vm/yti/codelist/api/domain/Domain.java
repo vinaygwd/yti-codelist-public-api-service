@@ -61,6 +61,7 @@ public interface Domain {
     Set<PropertyType> getPropertyTypes(final Integer pageSize,
                                        final Integer from,
                                        final String propertyTypePrefLabel,
+                                       final String context,
                                        final Date after,
                                        final Meta meta);
 

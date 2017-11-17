@@ -60,13 +60,14 @@ public class PropertyTypeResource extends AbstractBaseResource {
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getPropertyTypes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                      @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                     @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
+                                     @ApiParam(value = "PropertyType name as string value.") @QueryParam("name") final String name,
+                                     @ApiParam(value = "Context name as string value.") @QueryParam("context") final String context,
                                      @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                      @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_PROPERTYTYPES);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, Meta.parseAfterFromString(after), null);
+            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, Meta.parseAfterFromString(after), null);
             final String csv = constructPropertyTypesCsv(propertyTypes);
             final StreamingOutput stream = output -> {
                 try {
@@ -77,7 +78,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
             };
             return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODEREGISTRIES)).build();
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, Meta.parseAfterFromString(after), null);
+            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, Meta.parseAfterFromString(after), null);
             final Workbook workbook = constructPropertyTypesExcel(format, propertyTypes);
             final StreamingOutput stream = output -> {
                 try {
@@ -90,7 +91,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
-            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, meta.getAfter(), meta);
+            final Set<PropertyType> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, meta.getAfter(), meta);
             meta.setResultCount(propertyTypes.size());
             final ResponseWrapper<PropertyType> wrapper = new ResponseWrapper<>();
             wrapper.setResults(propertyTypes);
@@ -142,6 +143,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_TYPE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYURI);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CONTEXT);
         prefLabelLanguages.forEach(language -> {
             appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         });
@@ -153,6 +156,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
             appendValue(csv, csvSeparator, propertyType.getId().toString());
             appendValue(csv, csvSeparator, propertyType.getLocalName());
             appendValue(csv, csvSeparator, propertyType.getType());
+            appendValue(csv, csvSeparator, propertyType.getPropertyUri());
+            appendValue(csv, csvSeparator, propertyType.getContext());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, propertyType.getPrefLabels().get(language));
             });
@@ -175,6 +180,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TYPE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYURI);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CONTEXT);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -188,6 +195,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getLocalName()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getType()));
+            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getPropertyUri()));
+            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getContext()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(propertyType.getPrefLabels().get(language));
             }
