@@ -24,6 +24,8 @@ public interface Domain {
                                         final Date after,
                                         final Meta meta);
 
+    CodeScheme getCodeSchemeWithId(final String codeSchemeId);
+
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                              final String codeSchemeCodeValue);
 
@@ -70,8 +72,9 @@ public interface Domain {
     Set<ExternalReference> getExternalReferences();
 
     Set<ExternalReference> getExternalReferences(final Integer pageSize,
-                                            final Integer from,
-                                            final String externalReferencePrefLabel,
-                                            final Date after,
-                                            final Meta meta);
+                                                 final Integer from,
+                                                 final String externalReferencePrefLabel,
+                                                 final CodeScheme codeScheme,
+                                                 final Date after,
+                                                 final Meta meta);
 }

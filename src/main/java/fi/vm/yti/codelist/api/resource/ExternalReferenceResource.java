@@ -29,6 +29,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.ExternalReference;
 import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
@@ -60,13 +61,26 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                           @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                          @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
+                                          @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
+                                          @ApiParam(value = "CodeScheme id.") @QueryParam("codeSchemeId") final String codeSchemeId,
                                           @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_PROPERTYTYPES);
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES);
+        CodeScheme codeScheme = null;
+        if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
+            codeScheme = domain.getCodeSchemeWithId(codeSchemeId);
+            if (codeScheme == null) {
+                final ResponseWrapper<ExternalReference> wrapper = new ResponseWrapper<>();
+                final Meta meta = new Meta();
+                wrapper.setMeta(meta);
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            }
+        }
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, Meta.parseAfterFromString(after), null);
+            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
             final String csv = constructExternalReferencesCsv(externalReferences);
             final StreamingOutput stream = output -> {
                 try {
@@ -77,7 +91,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             };
             return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODEREGISTRIES)).build();
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, Meta.parseAfterFromString(after), null);
+            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
             final Workbook workbook = constructExternalReferencesExcel(format, externalReferences);
             final StreamingOutput stream = output -> {
                 try {
@@ -90,7 +104,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
-            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, meta.getAfter(), meta);
+            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, meta.getAfter(), meta);
             meta.setResultCount(externalReferences.size());
             final ResponseWrapper<ExternalReference> wrapper = new ResponseWrapper<>();
             wrapper.setResults(externalReferences);
@@ -104,9 +118,9 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @ApiOperation(value = "Return one specific CodeRegistry.", response = CodeRegistry.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns one specific CodeRegistry in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getExternalReference(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
+    public Response getExternalReference(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_PROPERTYTYPES + "/" + externalReferenceId + "/");
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES + "/" + externalReferenceId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
         final ExternalReference externalReference = domain.getExternalReference(externalReferenceId);
         if (externalReference != null) {

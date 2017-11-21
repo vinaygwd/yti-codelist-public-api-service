@@ -111,6 +111,32 @@ public class DomainImpl implements Domain {
         return codeRegistries;
     }
 
+    public CodeScheme getCodeSchemeWithId(final String codeSchemeId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
+                .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .addSort("codeValue.keyword", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery()
+                .must(QueryBuilders.matchQuery("id", codeSchemeId.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                    }
+                } catch (IOException e) {
+                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+
     public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                                     final String codeSchemeCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
@@ -295,7 +321,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<PropertyType> getPropertyTypes() {
-        return getPropertyTypes(MAX_SIZE, 0, null, null,null, null);
+        return getPropertyTypes(MAX_SIZE, 0, null, null, null, null);
     }
 
     public Set<PropertyType> getPropertyTypes(final Integer pageSize,
@@ -360,14 +386,15 @@ public class DomainImpl implements Domain {
     }
 
     public Set<ExternalReference> getExternalReferences() {
-        return getExternalReferences(MAX_SIZE, 0, null, null, null);
+        return getExternalReferences(MAX_SIZE, 0, null, null, null, null);
     }
 
     public Set<ExternalReference> getExternalReferences(final Integer pageSize,
-                                              final Integer from,
-                                              final String codeRegistryPrefLabel,
-                                              final Date after,
-                                              final Meta meta) {
+                                                        final Integer from,
+                                                        final String externalReferencePrefLabel,
+                                                        final CodeScheme codeScheme,
+                                                        final Date after,
+                                                        final Meta meta) {
         final Set<ExternalReference> externalReferences = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
@@ -377,8 +404,12 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
-            final BoolQueryBuilder builder = constructSearchQuery(null, codeRegistryPrefLabel, after);
+            final BoolQueryBuilder builder = constructSearchQuery(null, externalReferencePrefLabel, after);
             searchRequest.setQuery(builder);
+            if (codeScheme != null) {
+                builder.must(QueryBuilders.prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()));
+                builder.must(QueryBuilders.prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase()));
+            }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
@@ -392,6 +423,7 @@ public class DomainImpl implements Domain {
         }
         return externalReferences;
     }
+
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
                                                   final String prefLabel,
                                                   final Date after) {

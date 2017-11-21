@@ -29,6 +29,7 @@ import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.model.ExternalReference;
 import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -246,7 +247,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
                 final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES, after, pageSize, from + pageSize));
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION,  API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, after, pageSize, from + pageSize));
                 }
                 final ResponseWrapper<Code> wrapper = new ResponseWrapper<>();
                 wrapper.setMeta(meta);
@@ -258,6 +259,45 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 wrapper.setResults(codes);
                 return Response.ok(wrapper).build();
             }
+        } else {
+            final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences")
+    @ApiOperation(value = "Return codes for a CodeScheme.", response = Code.class)
+    @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    public Response getCodeRegistryCodeSchemeExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                                @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                                @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                                @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                                @ApiParam(value = "ExternalReference PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES + "/");
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        if (codeScheme != null) {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+            final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES, after, pageSize, from + pageSize));
+            }
+            final ResponseWrapper<ExternalReference> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            if (externalReferences == null) {
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            }
+            wrapper.setResults(externalReferences);
+            return Response.ok(wrapper).build();
         } else {
             final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
             wrapper.setMeta(meta);
