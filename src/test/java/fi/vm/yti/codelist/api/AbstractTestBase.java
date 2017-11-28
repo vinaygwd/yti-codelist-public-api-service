@@ -42,9 +42,9 @@ abstract public class AbstractTestBase {
     private static final String MAX_RESULT_WINDOW = "max_result_window";
     private static final int MAX_RESULT_WINDOW_SIZE = 500000;
 
-    private static final String NESTED_PREFLABELS_MAPPING_JSON = "{" +
+    private static final String NESTED_PREFLABEL_MAPPING_JSON = "{" +
         "\"properties\": {\n" +
-        "  \"prefLabels\": {\n" +
+        "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  }\n" +
         "}\n}";
@@ -82,7 +82,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodeRegistries() {
-        createIndexWithNestedPrefLabels(ELASTIC_INDEX_CODEREGISTRY, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODEREGISTRY, getTypes());
         final Set<CodeRegistry> codeRegistries = new HashSet<>();
         for (int i = 0; i < 8; i++) {
             codeRegistries.add(createCodeRegistry("testregistry" + (i + 1)));
@@ -93,7 +93,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodeSchemes(final Set<CodeRegistry> codeRegistries) {
-        createIndexWithNestedPrefLabels(ELASTIC_INDEX_CODESCHEME, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODESCHEME, getTypes());
         final Set<CodeScheme> codeSchemes = new HashSet<>();
         for (final CodeRegistry codeRegistry : codeRegistries) {
             for (int i = 0; i < 8; i++) {
@@ -106,7 +106,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodes(final Set<CodeScheme> codeSchemes) {
-        createIndexWithNestedPrefLabels(ELASTIC_INDEX_CODE, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODE, getTypes());
         final Set<Code> codes = new HashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
             for (int i = 0; i < 8; i++) {
@@ -118,13 +118,13 @@ abstract public class AbstractTestBase {
         LOG.info("Indexed " + codes.size() + " Codes.");
     }
 
-    private void createIndexWithNestedPrefLabels(final String indexName, final Set<String> types) {
+    private void createIndexWithNestedPrefLabel(final String indexName, final Set<String> types) {
         final boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
         if (!exists) {
             final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
             builder.setSettings(Settings.builder().put(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE));
             for (final String type : types) {
-                builder.addMapping(type, NESTED_PREFLABELS_MAPPING_JSON, XContentType.JSON);
+                builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
             }
             final CreateIndexResponse response = builder.get();
             if (!response.isAcknowledged()) {

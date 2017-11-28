@@ -120,8 +120,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
     private Set<String> resolvePropertyTypePrefLabelLanguages(final Set<PropertyType> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyType propertyType : propertyTypes) {
-            final Map<String, String> prefLabels = propertyType.getPrefLabels();
-            languages.addAll(prefLabels.keySet());
+            final Map<String, String> prefLabel = propertyType.getPrefLabel();
+            languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
@@ -129,8 +129,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
     private Set<String> resolvePropertyTypeDefinitionLanguages(final Set<PropertyType> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyType propertyType : propertyTypes) {
-            final Map<String, String> definitions = propertyType.getDefinitions();
-            languages.addAll(definitions.keySet());
+            final Map<String, String> definition = propertyType.getDefinition();
+            languages.addAll(definition.keySet());
         }
         return languages;
     }
@@ -159,10 +159,10 @@ public class PropertyTypeResource extends AbstractBaseResource {
             appendValue(csv, csvSeparator, propertyType.getPropertyUri());
             appendValue(csv, csvSeparator, propertyType.getContext());
             prefLabelLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, propertyType.getPrefLabels().get(language));
+                appendValue(csv, csvSeparator, propertyType.getPrefLabel().get(language));
             });
             definitionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, propertyType.getDefinitions().get(language));
+                appendValue(csv, csvSeparator, propertyType.getDefinition().get(language));
             });
             csv.append("\n");
         }
@@ -198,10 +198,10 @@ public class PropertyTypeResource extends AbstractBaseResource {
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getPropertyUri()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getContext()));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(propertyType.getPrefLabels().get(language));
+                row.createCell(k++).setCellValue(propertyType.getPrefLabel().get(language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(propertyType.getDefinitions().get(language));
+                row.createCell(k++).setCellValue(propertyType.getDefinition().get(language));
             }
         }
         return workbook;

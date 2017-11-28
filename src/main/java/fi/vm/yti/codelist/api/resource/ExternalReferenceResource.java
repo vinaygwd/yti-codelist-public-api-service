@@ -133,8 +133,8 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     private Set<String> resolveExternalReferenceTitleLanguages(final Set<ExternalReference> externalReferences) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ExternalReference externalReference : externalReferences) {
-            final Map<String, String> titles = externalReference.getTitles();
-            languages.addAll(titles.keySet());
+            final Map<String, String> title = externalReference.getTitle();
+            languages.addAll(title.keySet());
         }
         return languages;
     }
@@ -142,8 +142,8 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     private Set<String> resolveExternalReferenceDescriptionLanguages(final Set<ExternalReference> externalReferences) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ExternalReference propertyType : externalReferences) {
-            final Map<String, String> descriptions = propertyType.getDescriptions();
-            languages.addAll(descriptions.keySet());
+            final Map<String, String> description = propertyType.getDescription();
+            languages.addAll(description.keySet());
         }
         return languages;
     }
@@ -164,10 +164,10 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         for (final ExternalReference externalReference : externalReferences) {
             appendValue(csv, csvSeparator, externalReference.getId().toString());
             titleLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, externalReference.getTitles().get(language));
+                appendValue(csv, csvSeparator, externalReference.getTitle().get(language));
             });
             descriptionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, externalReference.getDescriptions().get(language));
+                appendValue(csv, csvSeparator, externalReference.getDescription().get(language));
             });
             csv.append("\n");
         }
@@ -195,10 +195,10 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getId().toString()));
             for (final String language : titleLanguages) {
-                row.createCell(k++).setCellValue(externalReference.getTitles().get(language));
+                row.createCell(k++).setCellValue(externalReference.getTitle().get(language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(externalReference.getDescriptions().get(language));
+                row.createCell(k++).setCellValue(externalReference.getDescription().get(language));
             }
         }
         return workbook;

@@ -124,8 +124,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeRegistryPrefLabelLanguages(final Set<CodeRegistry> registries) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistry registry : registries) {
-            final Map<String, String> prefLabels = registry.getPrefLabels();
-            languages.addAll(prefLabels.keySet());
+            final Map<String, String> prefLabel = registry.getPrefLabel();
+            languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
@@ -133,8 +133,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeRegistryDefinitionLanguages(final Set<CodeRegistry> registries) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistry registry : registries) {
-            final Map<String, String> prefLabels = registry.getDefinitions();
-            languages.addAll(prefLabels.keySet());
+            final Map<String, String> definition = registry.getDefinition();
+            languages.addAll(definition.keySet());
         }
         return languages;
     }
@@ -157,10 +157,10 @@ abstract class AbstractBaseResource {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
             appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeRegistry.getPrefLabels().get(language));
+                appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language));
             });
             definitionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeRegistry.getDefinitions().get(language));
+                appendValue(csv, csvSeparator, codeRegistry.getDefinition().get(language));
             });
             csv.append("\n");
         }
@@ -190,10 +190,10 @@ abstract class AbstractBaseResource {
             row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getId().toString()));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(codeRegistry.getPrefLabels().get(language));
+                row.createCell(k++).setCellValue(codeRegistry.getPrefLabel().get(language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(codeRegistry.getDefinitions().get(language));
+                row.createCell(k++).setCellValue(codeRegistry.getDefinition().get(language));
             }
         }
         return workbook;
@@ -202,8 +202,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeSchemePrefLabelLanguages(final Set<CodeScheme> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
-            final Map<String, String> prefLabels = codeScheme.getPrefLabels();
-            languages.addAll(prefLabels.keySet());
+            final Map<String, String> prefLabel = codeScheme.getPrefLabel();
+            languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
@@ -211,8 +211,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeSchemeDefinitionLanguages(final Set<CodeScheme> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
-            final Map<String, String> definitions = codeScheme.getDefinitions();
-            languages.addAll(definitions.keySet());
+            final Map<String, String> definition = codeScheme.getDefinition();
+            languages.addAll(definition.keySet());
         }
         return languages;
     }
@@ -220,8 +220,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeSchemeDescriptionLanguages(final Set<CodeScheme> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
-            final Map<String, String> descriptions = codeScheme.getDescriptions();
-            languages.addAll(descriptions.keySet());
+            final Map<String, String> description = codeScheme.getDescription();
+            languages.addAll(description.keySet());
         }
         return languages;
     }
@@ -229,8 +229,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeSchemeChangeNoteLanguages(final Set<CodeScheme> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
-            final Map<String, String> changeNotes = codeScheme.getChangeNotes();
-            languages.addAll(changeNotes.keySet());
+            final Map<String, String> changeNote = codeScheme.getChangeNote();
+            languages.addAll(changeNote.keySet());
         }
         return languages;
     }
@@ -275,16 +275,16 @@ abstract class AbstractBaseResource {
             appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
             appendValue(csv, csvSeparator, codeScheme.getLicense());
             prefLabelLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeScheme.getPrefLabels().get(language));
+                appendValue(csv, csvSeparator, codeScheme.getPrefLabel().get(language));
             });
             definitionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeScheme.getDefinitions().get(language));
+                appendValue(csv, csvSeparator, codeScheme.getDefinition().get(language));
             });
             descriptionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeScheme.getDescriptions().get(language));
+                appendValue(csv, csvSeparator, codeScheme.getDescription().get(language));
             });
             changeNoteLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, codeScheme.getChangeNotes().get(language));
+                appendValue(csv, csvSeparator, codeScheme.getChangeNote().get(language));
             });
             appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
             appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "", true);
@@ -346,16 +346,16 @@ abstract class AbstractBaseResource {
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getGovernancePolicy()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLicense()));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getPrefLabels().get(language));
+                row.createCell(k++).setCellValue(codeScheme.getPrefLabel().get(language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getDefinitions().get(language));
+                row.createCell(k++).setCellValue(codeScheme.getDefinition().get(language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getDescriptions().get(language));
+                row.createCell(k++).setCellValue(codeScheme.getDescription().get(language));
             }
             for (final String language : changeNoteLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getChangeNotes().get(language));
+                row.createCell(k++).setCellValue(codeScheme.getChangeNote().get(language));
             }
             row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
             row.createCell(k).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
@@ -366,8 +366,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodePrefLabelLanguages(final Set<Code> codes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final Code code : codes) {
-            final Map<String, String> prefLabels = code.getPrefLabels();
-            languages.addAll(prefLabels.keySet());
+            final Map<String, String> prefLabel = code.getPrefLabel();
+            languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
@@ -375,8 +375,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeDefinitionLanguages(final Set<Code> codes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final Code code : codes) {
-            final Map<String, String> definitions = code.getDefinitions();
-            languages.addAll(definitions.keySet());
+            final Map<String, String> definition = code.getDefinition();
+            languages.addAll(definition.keySet());
         }
         return languages;
     }
@@ -384,8 +384,8 @@ abstract class AbstractBaseResource {
     private Set<String> resolveCodeDescriptionLanguages(final Set<Code> codes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final Code code : codes) {
-            final Map<String, String> descriptions = code.getDescriptions();
-            languages.addAll(descriptions.keySet());
+            final Map<String, String> description = code.getDescription();
+            languages.addAll(description.keySet());
         }
         return languages;
     }
@@ -417,13 +417,13 @@ abstract class AbstractBaseResource {
             appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getStatus());
             prefLabelLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, code.getPrefLabels().get(language));
+                appendValue(csv, csvSeparator, code.getPrefLabel().get(language));
             });
             definitionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, code.getDefinitions().get(language));
+                appendValue(csv, csvSeparator, code.getDefinition().get(language));
             });
             descriptionLanguages.forEach(language -> {
-                appendValue(csv, csvSeparator, code.getDescriptions().get(language));
+                appendValue(csv, csvSeparator, code.getDescription().get(language));
             });
             appendValue(csv, csvSeparator, code.getShortName());
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
@@ -465,13 +465,13 @@ abstract class AbstractBaseResource {
             row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(code.getPrefLabels().get(language));
+                row.createCell(k++).setCellValue(code.getPrefLabel().get(language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(code.getDefinitions().get(language));
+                row.createCell(k++).setCellValue(code.getDefinition().get(language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(code.getDescriptions().get(language));
+                row.createCell(k++).setCellValue(code.getDescription().get(language));
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");

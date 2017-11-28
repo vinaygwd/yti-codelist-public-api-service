@@ -196,7 +196,7 @@ public class DomainImpl implements Domain {
                 builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             }
             if (codeRegistryPrefLabel != null) {
-                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabels", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabels.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabel", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
                 builder.must(QueryBuilders.nestedQuery("dataClassifications", QueryBuilders.termsQuery("dataClassifications.codeValue.keyword", dataClassifications), ScoreMode.None));
@@ -432,7 +432,7 @@ public class DomainImpl implements Domain {
             builder.must(QueryBuilders.prefixQuery("codeValue", codeValue.toLowerCase()));
         }
         if (prefLabel != null) {
-            builder.must(QueryBuilders.nestedQuery("prefLabels", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabels.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(QueryBuilders.nestedQuery("prefLabel", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
