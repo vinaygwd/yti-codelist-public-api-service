@@ -143,7 +143,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeRegistry codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final String csv = constructCodeSchemesCsv(codeSchemes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -154,7 +154,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 };
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -166,7 +166,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
+                final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
                 meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);

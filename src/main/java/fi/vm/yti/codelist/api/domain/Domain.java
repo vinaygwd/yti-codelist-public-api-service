@@ -33,6 +33,7 @@ public interface Domain {
 
     Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                    final Integer from,
+                                   final String organizationId,
                                    final String codeRegistryCodeValue,
                                    final String codeRegistryPrefLabel,
                                    final String codeSchemeCodeValue,

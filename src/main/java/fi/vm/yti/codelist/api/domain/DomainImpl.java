@@ -168,11 +168,12 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeScheme> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
                                           final Integer from,
+                                          final String organizationId,
                                           final String codeRegistryCodeValue,
                                           final String codeRegistryPrefLabel,
                                           final String codeSchemeCodeValue,
@@ -192,6 +193,10 @@ public class DomainImpl implements Domain {
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
+            if (organizationId != null) {
+                builder.must(QueryBuilders.nestedQuery("codeRegistry.organizations", QueryBuilders.matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
+//                builder.must(QueryBuilders.matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()));
+            }
             if (codeRegistryCodeValue != null) {
                 builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             }

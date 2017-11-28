@@ -59,6 +59,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                    @ApiParam(value = "Service classifications in CSL format.") @QueryParam("dataClassification") final String dataClassification,
+                                   @ApiParam(value = "Organization id for content filtering.") @QueryParam("organizationId") final String organizationId,
                                    @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
@@ -69,7 +70,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final String csv = constructCodeSchemesCsv(codeSchemes);
             final StreamingOutput stream = output -> {
                 try {
@@ -80,7 +81,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
             };
             return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
             final StreamingOutput stream = output -> {
                 try {
@@ -93,7 +94,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
+            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());
             final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeSchemes);
