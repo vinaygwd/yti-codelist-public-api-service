@@ -279,7 +279,10 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
-            builder.must(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()));
+            builder.must(QueryBuilders.boolQuery()
+                .should(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+                .minimumShouldMatch(1));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             if (!statuses.isEmpty()) {
