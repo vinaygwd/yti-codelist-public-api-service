@@ -14,7 +14,7 @@ public class CustomObjectMapper extends ObjectMapper {
     public CustomObjectMapper() {
         super();
         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 }
 
