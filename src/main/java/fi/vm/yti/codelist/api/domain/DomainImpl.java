@@ -236,7 +236,10 @@ public class DomainImpl implements Domain {
                 .should(QueryBuilders.matchQuery("id", codeCodeValue.toLowerCase()))
                 .should(QueryBuilders.matchQuery("codeValue", codeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
-            builder.must(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()));
+            builder.must(boolQuery()
+                .should(QueryBuilders.matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+                .should(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
+                .minimumShouldMatch(1));
             builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
 
