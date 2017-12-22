@@ -418,8 +418,13 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null, externalReferencePrefLabel, after);
             searchRequest.setQuery(builder);
             if (codeScheme != null) {
-                builder.must(QueryBuilders.prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()));
-                builder.must(QueryBuilders.prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase()));
+                builder.should(QueryBuilders.boolQuery()
+                    .should(QueryBuilders.boolQuery()
+                        .must(QueryBuilders.prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()))
+                        .must(QueryBuilders.prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase())))
+                    .should(QueryBuilders.boolQuery()
+                        .must(QueryBuilders.matchQuery("global", true))));
+
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
