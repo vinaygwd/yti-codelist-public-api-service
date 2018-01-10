@@ -69,7 +69,7 @@ public class DomainImpl implements Domain {
                         return mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
                     }
                 } catch (IOException e) {
-                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage(), e);
                 }
             }
         }
