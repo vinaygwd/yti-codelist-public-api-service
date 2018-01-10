@@ -410,6 +410,7 @@ abstract class AbstractBaseResource {
             appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
         });
         appendValue(csv, csvSeparator, CONTENT_HEADER_SHORTNAME);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_HIERARCHYLEVEL);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final Code code : codes) {
@@ -426,6 +427,7 @@ abstract class AbstractBaseResource {
                 appendValue(csv, csvSeparator, code.getDescription().get(language));
             });
             appendValue(csv, csvSeparator, code.getShortName());
+            appendValue(csv, csvSeparator, code.getHierarchyLevel());
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
         }
@@ -455,6 +457,7 @@ abstract class AbstractBaseResource {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
@@ -474,6 +477,7 @@ abstract class AbstractBaseResource {
                 row.createCell(k++).setCellValue(code.getDescription().get(language));
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
         }
