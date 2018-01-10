@@ -78,27 +78,27 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version><!--$NO-MVN-MAN-VER$ -->
+            <version>2.6</version><!--$NO-MVN-MAN-VER$ -->
         </dependency>
 
         <!-- Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.17</version>
+            <version>${apache.poi.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.17</version>
+            <version>${apache.poi.version}</version>
         </dependency>
 
-        <!-- Elastic Search related Log4J -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -234,7 +234,6 @@
                 <configuration>
                     <imageName>yti-codelist-public-api-service</imageName>
                     <dockerDirectory>docker</dockerDirectory>
-                    <useConfigFile>true</useConfigFile>
                     <pullOnBuild>false</pullOnBuild>
                     <resources>
                         <resource>
@@ -279,7 +278,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.4.0</version>
                 <executions>
                     <execution>
                         <id>swagger-ui</id>
@@ -349,7 +348,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.22.1</version>
+                <version>0.23.0</version>
                 <configuration>
                     <skip>${skipTests}</skip>
                     <portPropertyFile>target/test-classes/test-port.properties</portPropertyFile>
@@ -485,10 +484,11 @@
         <git.properties>git.properties</git.properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spotify-docker.version>0.4.13</spotify-docker.version>
-        <swagger.version>1.5.15</swagger.version>
-        <swagger-ui.version>3.1.5</swagger-ui.version>
-        <swagger-maven-plugin.version>3.1.5</swagger-maven-plugin.version>
+        <spotify-docker.version>1.0.0</spotify-docker.version>
+        <swagger.version>1.5.17</swagger.version>
+        <swagger-ui.version>3.1.6</swagger-ui.version>
+        <swagger-maven-plugin.version>3.1.6</swagger-maven-plugin.version>
+        <apache.poi.version>3.17</apache.poi.version>
     </properties>
 
 </project>
