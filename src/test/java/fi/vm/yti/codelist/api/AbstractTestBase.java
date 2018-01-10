@@ -82,7 +82,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodeRegistries() {
-        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODEREGISTRY, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
         final Set<CodeRegistry> codeRegistries = new HashSet<>();
         for (int i = 0; i < 8; i++) {
             codeRegistries.add(createCodeRegistry("testregistry" + (i + 1)));
@@ -93,7 +93,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodeSchemes(final Set<CodeRegistry> codeRegistries) {
-        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODESCHEME, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
         final Set<CodeScheme> codeSchemes = new HashSet<>();
         for (final CodeRegistry codeRegistry : codeRegistries) {
             for (int i = 0; i < 8; i++) {
@@ -106,7 +106,7 @@ abstract public class AbstractTestBase {
     }
 
     private void createAndIndexMockCodes(final Set<CodeScheme> codeSchemes) {
-        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODE, getTypes());
+        createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
         final Set<Code> codes = new HashSet<>();
         for (final CodeScheme codeScheme : codeSchemes) {
             for (int i = 0; i < 8; i++) {
@@ -118,14 +118,12 @@ abstract public class AbstractTestBase {
         LOG.info("Indexed " + codes.size() + " Codes.");
     }
 
-    private void createIndexWithNestedPrefLabel(final String indexName, final Set<String> types) {
+    private void createIndexWithNestedPrefLabel(final String indexName, final String type) {
         final boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
         if (!exists) {
             final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
             builder.setSettings(Settings.builder().put(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE));
-            for (final String type : types) {
-                builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
-            }
+            builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
             final CreateIndexResponse response = builder.get();
             if (!response.isAcknowledged()) {
                 LOG.error("Create failed for index: " + indexName);
@@ -189,14 +187,6 @@ abstract public class AbstractTestBase {
         codeRegistry.setModified(new Date(System.currentTimeMillis()));
         codeRegistry.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeValue + "/");
         return codeRegistry;
-    }
-
-    private Set<String> getTypes() {
-        final Set<String> types = new HashSet<>();
-        types.add(ELASTIC_TYPE_CODEREGISTRY);
-        types.add(ELASTIC_TYPE_CODESCHEME);
-        types.add(ELASTIC_TYPE_CODE);
-        return types;
     }
 
     private Code createCode(final CodeScheme codeScheme,

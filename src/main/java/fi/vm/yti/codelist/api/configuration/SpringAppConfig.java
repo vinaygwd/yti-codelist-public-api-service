@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +49,7 @@ public class SpringAppConfig {
     @Bean
     @SuppressWarnings("resource")
     protected Client elasticSearchClient() throws UnknownHostException {
-        final TransportAddress address = new InetSocketTransportAddress(InetAddress.getByName(elasticsearchHost), elasticsearchPort);
+        final TransportAddress address = new TransportAddress(InetAddress.getByName(elasticsearchHost), elasticsearchPort);
         final Settings settings = Settings.builder().put("cluster.name", clusterName).put("client.transport.ignore_cluster_name", false).put("client.transport.sniff", false).build();
         return new PreBuiltTransportClient(settings).addTransportAddress(address);
     }

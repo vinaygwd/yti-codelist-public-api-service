@@ -460,8 +460,8 @@ public class DomainImpl implements Domain {
 
     private void setResultCounts(final Meta meta,
                                  final SearchResponse response) {
-        final Integer totalResults = toIntExact(response.getHits().getTotalHits());
-        final Integer resultCount = toIntExact(response.getHits().internalHits().length);
+        final Integer totalResults = toIntExact(response.getHits().totalHits);
+        final Integer resultCount = toIntExact(response.getHits().getHits().length);
         if (meta != null) {
             meta.setTotalResults(totalResults);
             meta.setResultCount(resultCount);
