@@ -90,7 +90,7 @@ abstract class AbstractBaseResource {
         final Set<String> statusSet = new HashSet<>();
         if (statusCsl != null) {
             for (final String s : Arrays.asList(statusCsl.split(","))) {
-                final Status status = Status.valueOf(s.trim());
+                final Status status = Status.valueOf(s.toUpperCase().trim());
                 statusSet.add(status.toString());
             }
         }
@@ -101,7 +101,7 @@ abstract class AbstractBaseResource {
         final Set<String> dataClassificationsSet = new HashSet<>();
         if (dataClassificationCsl != null) {
             for (final String s : Arrays.asList(dataClassificationCsl.split(","))) {
-                dataClassificationsSet.add(s.trim());
+                dataClassificationsSet.add(s.toUpperCase().trim());
             }
         }
         return new ArrayList<String>(dataClassificationsSet);
