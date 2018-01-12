@@ -77,7 +77,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeRegistry> getCodeRegistries() {
-        return getCodeRegistries(MAX_SIZE, 0, null, null, null, null);
+        return getCodeRegistries(MAX_SIZE, 0, null, null, null, null, null);
     }
 
     public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
@@ -85,7 +85,8 @@ public class DomainImpl implements Domain {
                                                final String codeRegistryCodeValue,
                                                final String codeRegistryPrefLabel,
                                                final Date after,
-                                               final Meta meta) {
+                                               final Meta meta,
+                                               final List<String> organizations) {
         final Set<CodeRegistry> codeRegistries = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
@@ -96,7 +97,11 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.keyword", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
+
             final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel, after);
+            if (organizations != null && !organizations.isEmpty()) {
+                builder.must(QueryBuilders.termsQuery("organizations.id.keyword", organizations));
+            }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

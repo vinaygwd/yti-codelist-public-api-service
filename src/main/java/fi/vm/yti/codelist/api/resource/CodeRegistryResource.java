@@ -1,6 +1,8 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static java.util.Arrays.asList;
 
 /**
  * REST resources for CodeRegistries, CodeSchemes and Codes.
@@ -67,10 +70,12 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "CodeRegistry name as string value.") @QueryParam("name") final String name,
                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                      @ApiParam(value = "Organizations filtering parameter, results will be registries belonging to these organizations") @QueryParam("organizations") final String organizationsCsv) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
+        final List<String> organizations = organizationsCsv == null ? null : Arrays.asList(organizationsCsv.split(","));
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null);
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
             final String csv = constructRegistersCsv(codeRegistries);
             final StreamingOutput stream = output -> {
                 try {
@@ -81,7 +86,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             };
             return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODEREGISTRIES)).build();
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null);
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
             final Workbook workbook = constructRegistriesExcel(format, codeRegistries);
             final StreamingOutput stream = output -> {
                 try {
@@ -94,7 +99,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
-            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta);
+            final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta, organizations);
             meta.setResultCount(codeRegistries.size());
             final ResponseWrapper<CodeRegistry> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeRegistries);

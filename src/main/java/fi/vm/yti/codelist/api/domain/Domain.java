@@ -22,7 +22,8 @@ public interface Domain {
                                         final String codeRegistryCodeValue,
                                         final String codeRegistryPrefLabel,
                                         final Date after,
-                                        final Meta meta);
+                                        final Meta meta,
+                                        final List<String> organizations);
 
     CodeScheme getCodeSchemeWithId(final String codeSchemeId);
 
