@@ -500,7 +500,7 @@ abstract class AbstractBaseResource {
     }
 
     private void appendValue(final StringBuilder builder, final String separator, final String value, final boolean isLast) {
-        if (value != null && value.contains(",")) {
+        if (value != null && (value.contains(",") || value.contains("\n"))) {
             builder.append("\"");
             builder.append(checkEmptyValue(value));
             builder.append("\"");
