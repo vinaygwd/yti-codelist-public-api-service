@@ -1,8 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -73,7 +71,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                       @ApiParam(value = "Organizations filtering parameter, results will be registries belonging to these organizations") @QueryParam("organizations") final String organizationsCsv) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
-        final List<String> organizations = organizationsCsv == null ? null : Arrays.asList(organizationsCsv.split(","));
+        final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.split(","));
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<CodeRegistry> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
             final String csv = constructRegistersCsv(codeRegistries);
@@ -252,7 +250,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
                 final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION,  API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, after, pageSize, from + pageSize));
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, after, pageSize, from + pageSize));
                 }
                 final ResponseWrapper<Code> wrapper = new ResponseWrapper<>();
                 wrapper.setMeta(meta);
@@ -289,7 +287,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
-                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
             final Set<ExternalReference> externalReferences = domain.getExternalReferences(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                 meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES, after, pageSize, from + pageSize));
