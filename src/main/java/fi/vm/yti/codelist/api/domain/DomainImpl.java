@@ -34,6 +34,7 @@ import fi.vm.yti.codelist.common.model.PropertyType;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 @Singleton
 @Service
@@ -57,8 +58,8 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id", codeRegistryCodeValue.toLowerCase()))
-                .should(QueryBuilders.matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeRegistryCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -125,7 +126,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .must(QueryBuilders.matchQuery("id", codeSchemeId.toLowerCase()));
+                .must(matchQuery("id", codeSchemeId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -152,10 +153,10 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id", codeSchemeCodeValue.toLowerCase()))
-                .should(QueryBuilders.matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
-            builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+            builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -199,11 +200,11 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
             if (organizationId != null) {
-                builder.must(QueryBuilders.nestedQuery("codeRegistry.organizations", QueryBuilders.matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
+                builder.must(QueryBuilders.nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
 //                builder.must(QueryBuilders.matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()));
             }
             if (codeRegistryCodeValue != null) {
-                builder.must(QueryBuilders.matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+                builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             }
             if (codeRegistryPrefLabel != null) {
                 builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabel", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
@@ -238,14 +239,14 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id", codeCodeValue.toLowerCase()))
-                .should(QueryBuilders.matchQuery("codeValue", codeCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1);
             builder.must(boolQuery()
-                .should(QueryBuilders.matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
-                .should(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
-            builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -287,11 +288,11 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
-            builder.must(QueryBuilders.boolQuery()
-                .should(QueryBuilders.matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
-                .should(QueryBuilders.matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+            builder.must(boolQuery()
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
-            builder.must(QueryBuilders.matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             if (!statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
@@ -318,7 +319,7 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id", propertyTypeId.toLowerCase()))
+                .should(matchQuery("id", propertyTypeId.toLowerCase()))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -382,7 +383,7 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
                 .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(QueryBuilders.matchQuery("id", externalReferenceId.toLowerCase()))
+                .should(matchQuery("id", externalReferenceId.toLowerCase()))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -428,7 +429,7 @@ public class DomainImpl implements Domain {
                         .must(QueryBuilders.prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()))
                         .must(QueryBuilders.prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase())))
                     .should(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.matchQuery("global", true))));
+                        .must(matchQuery("global", true))));
 
             }
             final SearchResponse response = searchRequest.execute().actionGet();
