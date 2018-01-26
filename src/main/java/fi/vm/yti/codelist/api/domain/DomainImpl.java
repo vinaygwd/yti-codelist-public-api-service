@@ -319,8 +319,7 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(matchQuery("id", propertyTypeId.toLowerCase()))
-                .minimumShouldMatch(1);
+                .must(matchQuery("id", propertyTypeId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -383,16 +382,14 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
                 .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(matchQuery("id", externalReferenceId.toLowerCase()))
-                .minimumShouldMatch(1);
+                .must(matchQuery("id", externalReferenceId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        final ExternalReference externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
-                        return externalReference;
+                        return mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
