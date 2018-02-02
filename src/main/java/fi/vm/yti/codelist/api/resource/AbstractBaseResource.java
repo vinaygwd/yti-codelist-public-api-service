@@ -5,11 +5,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -395,6 +398,10 @@ abstract class AbstractBaseResource {
     }
 
     public String constructCodesCsv(final Set<Code> codes) {
+        final Map<UUID, String> codeValueIdMap = new HashMap<>();
+        for (final Code code : codes) {
+            codeValueIdMap.put(code.getId(), code.getCodeValue());
+        }
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
@@ -402,6 +409,7 @@ abstract class AbstractBaseResource {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         prefLabelLanguages.forEach(language -> {
@@ -419,6 +427,7 @@ abstract class AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final Code code : codes) {
             appendValue(csv, csvSeparator, code.getCodeValue());
+            appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getStatus());
             prefLabelLanguages.forEach(language -> {
@@ -440,6 +449,10 @@ abstract class AbstractBaseResource {
 
     public Workbook constructCodesExcel(final String format,
                                         final Set<Code> codes) {
+        final Map<UUID, String> codeValueIdMap = new HashMap<>();
+        for (final Code code : codes) {
+            codeValueIdMap.put(code.getId(), code.getCodeValue());
+        }
         final Workbook workbook = createWorkBook(format);
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
@@ -449,6 +462,7 @@ abstract class AbstractBaseResource {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_BROADER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
         for (final String language : prefLabelLanguages) {
@@ -469,6 +483,7 @@ abstract class AbstractBaseResource {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(code.getCodeValue());
+            row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
             row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {

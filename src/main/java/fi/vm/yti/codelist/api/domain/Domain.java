@@ -27,6 +27,8 @@ public interface Domain {
 
     CodeScheme getCodeSchemeWithId(final String codeSchemeId);
 
+    CodeScheme getCodeScheme(final String codeSchemeId);
+
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
                              final String codeSchemeCodeValue);
 
@@ -54,6 +56,7 @@ public interface Domain {
                        final String codeSchemeCodeValue,
                        final String codeCodeValue,
                        final String prefLabel,
+                       final String broaderCodeId,
                        final List<String> statuses,
                        final Date after,
                        final Meta meta);

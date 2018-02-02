@@ -24,7 +24,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
 
 @Component
 @Path("/swagger.json")
-@Api(value = "swagger.json", description = "Operation that outputs environment specific dynamic swagger.json.")
+@Api(value = "swagger.json")
 @Produces("text/plain")
 public class SwaggerResource extends AbstractBaseResource {
 

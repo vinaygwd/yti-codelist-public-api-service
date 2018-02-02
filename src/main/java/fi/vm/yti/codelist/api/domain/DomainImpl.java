@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -127,6 +128,33 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.keyword", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .must(matchQuery("id", codeSchemeId.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                    }
+                } catch (IOException e) {
+                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+
+    public CodeScheme getCodeScheme(final String codeSchemeId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
+                .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .addSort("codeValue.keyword", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery()
+                .should(matchQuery("id", codeSchemeId.toLowerCase()))
+                .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -273,6 +301,7 @@ public class DomainImpl implements Domain {
                               final String codeSchemeCodeValue,
                               final String codeCodeValue,
                               final String prefLabel,
+                              final String broaderCodeId,
                               final List<String> statuses,
                               final Date after,
                               final Meta meta) {
@@ -294,6 +323,9 @@ public class DomainImpl implements Domain {
                 .minimumShouldMatch(1));
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
+            if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
+                builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
+            }
             if (!statuses.isEmpty()) {
                 builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
             }

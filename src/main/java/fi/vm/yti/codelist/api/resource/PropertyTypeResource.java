@@ -42,7 +42,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
  */
 @Component
 @Path("/v1/propertytypes")
-@Api(value = "propertytypes", description = "Operations about PropertyTypes.")
+@Api(value = "propertytypes")
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class PropertyTypeResource extends AbstractBaseResource {
 

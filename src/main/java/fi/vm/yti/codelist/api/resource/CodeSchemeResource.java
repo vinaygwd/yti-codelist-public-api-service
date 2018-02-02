@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -31,14 +32,22 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_CODESCHEMES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_CSV;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLS;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLSX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_JSON;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
 
 /**
- * REST resources for listing CodeSchemes.
+ * REST resources for CodeSchemes.
  */
 @Component
 @Path("/v1/codeschemes")
-@Api(value = "codeschemes", description = "Operations about CodeSchemes.")
+@Api(value = "codeschemes")
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeSchemeResource extends AbstractBaseResource {
 
@@ -100,6 +109,23 @@ public class CodeSchemeResource extends AbstractBaseResource {
             wrapper.setResults(codeSchemes);
             wrapper.setMeta(meta);
             return Response.ok(wrapper).build();
+        }
+    }
+
+    @GET
+    @Path("{codeSchemeId}")
+    @ApiOperation(value = "Return one specific CodeScheme.", response = CodeScheme.class)
+    @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
+                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/" + codeSchemeId + "/");
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeScheme codeScheme = domain.getCodeScheme(codeSchemeId);
+        if (codeScheme != null) {
+            return Response.ok(codeScheme).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 }
